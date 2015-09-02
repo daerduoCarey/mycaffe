@@ -838,14 +838,6 @@ layer {
   type: "Convolution"
   bottom: "loss1/ave_pool"
   top: "loss1/conv"
-  param {
-    lr_mult: 5
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 10
-    decay_mult: 0
-  }
   convolution_param {
     num_output: 128
     kernel_size: 1
@@ -869,14 +861,6 @@ layer {
   type: "InnerProduct"
   bottom: "loss1/conv"
   top: "loss1/fc"
-  param {
-    lr_mult: 5
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 10
-    decay_mult: 0
-  }
   inner_product_param {
     num_output: 1024
     weight_filler {
@@ -908,14 +892,6 @@ layer {
   type: "InnerProduct"
   bottom: "loss1/fc"
   top: "loss1/classifier"
-  param {
-    lr_mult: 5
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 10
-    decay_mult: 0
-  }
   inner_product_param {
     num_output: 200
     weight_filler {
@@ -1601,14 +1577,6 @@ layer {
   type: "Convolution"
   bottom: "loss2/ave_pool"
   top: "loss2/conv"
-  param {
-    lr_mult: 5
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 10
-    decay_mult: 0
-  }
   convolution_param {
     num_output: 128
     kernel_size: 1
@@ -1632,14 +1600,6 @@ layer {
   type: "InnerProduct"
   bottom: "loss2/conv"
   top: "loss2/fc"
-  param {
-    lr_mult: 5
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 10
-    decay_mult: 0
-  }
   inner_product_param {
     num_output: 1024
     weight_filler {
@@ -1671,14 +1631,6 @@ layer {
   type: "InnerProduct"
   bottom: "loss2/fc"
   top: "loss2/classifier"
-  param {
-    lr_mult: 5
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 10
-    decay_mult: 0
-  }
   inner_product_param {
     num_output: 200
     weight_filler {
@@ -2384,14 +2336,6 @@ layer {
   type: "InnerProduct"
   bottom: "pool5/7x7_s1"
   top: "loss3/classifier"
-  param {
-    lr_mult: 5
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 10
-    decay_mult: 0
-  }
   inner_product_param {
     num_output: 200
     weight_filler {
