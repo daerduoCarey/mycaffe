@@ -2,6 +2,7 @@
 
 #include "caffe/layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/util/gpu_util.cuh"
 #include "caffe/st_layer.hpp"
 #include "caffe/util/benchmark.hpp"
 
@@ -159,36 +160,6 @@ __global__ void SpatialTransformerBackwardGPU_dTheta(const int nthreads, int C,
 		dTheta_tmp_diff[(6 * i + 5) * (output_H_ * output_W_ * C) + idx] += delta_dpy;
 	}
 }
-__device__ float atomicAdd (float *address, float value) {
-	
-	int oldval, newval, readback;
-	  
-	oldval = __float_as_int(*address);
-	newval = __float_as_int(__int_as_float(oldval) + value);
-	
-	while ((readback=atomicCAS((int *)address, oldval, newval)) != oldval) 
-	{
-		oldval = readback;
-	        newval = __float_as_int(__int_as_float(oldval) + value);
-	}
-
-	return __int_as_float(oldval);
-}
-
-__device__ double atomicAdd(double* address, double val) {
-
-	unsigned long long int* address_as_ull = (unsigned long long int*)address; 
-	unsigned long long int old = *address_as_ull, assumed; 
-	
-	do { 
-		assumed = old; 
-		old = atomicCAS(address_as_ull, assumed, 
-				__double_as_longlong(val + __longlong_as_double(assumed))); 
-		// Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN) 
-	} while (assumed != old); 
-
-	return __longlong_as_double(old); 
-}
 
 template <typename Dtype>
 __global__ void SpatialTransformerBackwardGPU_dU(const int nthreads, const int C, 
@@ -219,25 +190,25 @@ __global__ void SpatialTransformerBackwardGPU_dU(const int nthreads, const int C
 	  	m = floor(x); n = floor(y); w = 0;
 	  	if(m >= 0 && m < H && n >= 0 && n < W) {
 	  		w = (1 - (x - m)) * (1 - (y - n));
-	  		atomicAdd(pic + (m * W + n), w * dV[V_offset]);
+			caffe_gpu_atomic_add(w * dV[V_offset], pic + (m * W + n));
 	  	}
 
 	  	m = floor(x) + 1; n = floor(y); w = 0;
 	  	if(m >= 0 && m < H && n >= 0 && n < W) {
 	  		w = (1 - (m - x)) * (1 - (y - n));
-	  		atomicAdd(pic + (m * W + n), w * dV[V_offset]);
+			caffe_gpu_atomic_add(w * dV[V_offset], pic + (m * W + n));
 	  	}
 
 	  	m = floor(x); n = floor(y) + 1; w = 0;
 	  	if(m >= 0 && m < H && n >= 0 && n < W) {
 	  		w = (1 - (x - m)) * (1 - (n - y));
-	  		atomicAdd(pic + (m * W + n), w * dV[V_offset]);
+			caffe_gpu_atomic_add(w * dV[V_offset], pic + (m * W + n));
 	  	}
 
 	  	m = floor(x) + 1; n = floor(y) + 1; w = 0;
 	  	if(m >= 0 && m < H && n >= 0 && n < W) {
 	  		w = (1 - (m - x)) * (1 - (n - y));
-	  		atomicAdd(pic + (m * W + n), w * dV[V_offset]);
+			caffe_gpu_atomic_add(w * dV[V_offset], pic + (m * W + n));
 	  	}
 	}
 }

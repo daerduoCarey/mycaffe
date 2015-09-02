@@ -5,6 +5,7 @@
 #include "caffe/layer.hpp"
 #include "caffe/util/benchmark.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/util/gpu_util.cuh"
 #include "caffe/vision_layers.hpp"
 #include "caffe/bn_layer.hpp"
 
@@ -16,7 +17,7 @@ __global__ void MeanForward(const int nthreads, const Dtype* bottom_data,
     const int width, Dtype* mean) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     int c = (index / width / height) % channels;
-    atomicAdd(mean + c, bottom_data[index]);
+    caffe_gpu_atomic_add(bottom_data[index], mean + c);
   }
 }
 
@@ -36,8 +37,7 @@ __global__ void VarForward(const int nthreads,
     const int width, const Dtype* diff, Dtype* var) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     int c = (index / width / height) % channels;
-
-    atomicAdd(var + c, diff[index] * diff[index]);
+    caffe_gpu_atomic_add(diff[index] * diff[index], var + c);
   }
 }
 
@@ -75,8 +75,7 @@ __global__ void DlDsigmasqBackward(const int nthreads, const Dtype* top_diff,
     Dtype var_3_2 = var_sqrt * var_sqrt * var_sqrt;
     Dtype var_pow = 1.0 / var_3_2;
 
-    atomicAdd(dl_dsigmasq + c, gamma * top_diff[index] * diffs[index] *
-        -0.5 * var_pow);
+    caffe_gpu_atomic_add((Dtype) (gamma * top_diff[index] * diffs[index] * -0.5 * var_pow), dl_dsigmasq + c);
   }
 }
 
@@ -95,8 +94,8 @@ __global__ void DlDmuBackward(const int nthreads, const Dtype* top_diff,
     Dtype inv_sqr_var = 1.0 / var_sqrt;
     Dtype dl_dsigmasq_val = dl_dsigmasq[c];
 
-    atomicAdd(dl_dmu + c, gamma * top_diff[index] * -inv_sqr_var +
-        dl_dsigmasq_val * -2.0 * diffs[index] / count);
+    caffe_gpu_atomic_add((Dtype) (gamma * top_diff[index] * -inv_sqr_var +
+        dl_dsigmasq_val * -2.0 * diffs[index] / count), dl_dmu + c);
   }
 }
 
@@ -134,16 +133,9 @@ __global__ void ParamsBackward(const int nthreads, const Dtype* top_diff,
     Dtype gamma = gammas[c];
     Dtype beta = betas[c];
 
-    atomicAdd(gamma_diff + c,
-        top_diff[index] * (top_data[index] - beta) / gamma);
-    atomicAdd(beta_diff + c, top_diff[index]);
+    caffe_gpu_atomic_add(top_diff[index] * (top_data[index] - beta) / gamma, gamma_diff + c);
+    caffe_gpu_atomic_add(top_diff[index], beta_diff + c);
   }
-}
-
-template <>
-void BNLayer<double>::Forward_gpu(
-    const vector<Blob<double>*>& bottom, const vector<Blob<double>*>& top) {
-  NOT_IMPLEMENTED;
 }
 
 template <typename Dtype>
@@ -226,13 +218,6 @@ void BNLayer<Dtype>::Forward_gpu(
   CUDA_POST_KERNEL_CHECK;
   timer.Stop();
   // DLOG(INFO) << "NormalizeForward: " << timer.MilliSeconds();
-}
-
-template <>
-void BNLayer<double>::Backward_gpu(const vector<Blob<double>*>& top,
-    const vector<bool>& propagate_down,
-    const vector<Blob<double>*>& bottom) {
-  NOT_IMPLEMENTED;
 }
 
 template <typename Dtype>

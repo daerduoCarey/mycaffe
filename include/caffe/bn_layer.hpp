@@ -25,9 +25,6 @@ class BNLayer : public Layer<Dtype> {
 		virtual void Reshape(const vector<Blob<Dtype>*>& bottom, 
 				const vector<Blob<Dtype>*>& top);
 
-	 	virtual inline LayerParameter_LayerType type() const {
-			return LayerParameter_LayerType_DROMPNAR;
-		}
 	 	virtual inline int ExactNumBottomBlobs() const { return 1; }
 	 	virtual inline int ExactNumTopBlobs() const { return 1; }
 	  
