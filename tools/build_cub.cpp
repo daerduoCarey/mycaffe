@@ -2,6 +2,8 @@
 #include <glog/logging.h>
 #include <opencv2/opencv.hpp>
 
+#include <boost/shared_ptr.hpp>
+
 #include <algorithm>
 #include <fstream>  // NOLINT(readability/streams)
 #include <map>
@@ -16,6 +18,7 @@
 
 using namespace caffe;  // NOLINT(build/namespaces)
 using std::pair;
+using boost::shared_ptr;
 
 struct bbox_t {
   float x, y, width, height;
