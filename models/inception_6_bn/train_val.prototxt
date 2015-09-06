@@ -1,4 +1,4 @@
-name: "Inception_6_BN"
+name: "Inception_6_bn"
 layer {
   name: "data"
   type: "Data"
@@ -10,9 +10,9 @@ layer {
   transform_param {
     mirror: true
     crop_size: 224
-    mean_value: 104
-    mean_value: 117
-    mean_value: 123
+    mean_value: 104.0
+    mean_value: 117.0
+    mean_value: 123.0
   }
   data_param {
     source: "/ssd/ilsvrc2012/ilsvrc12_train_lmdb"
@@ -31,9 +31,9 @@ layer {
   transform_param {
     mirror: false
     crop_size: 224
-    mean_value: 104
-    mean_value: 117
-    mean_value: 123
+    mean_value: 104.0
+    mean_value: 117.0
+    mean_value: 123.0
   }
   data_param {
     source: "/ssd/ilsvrc2012/ilsvrc12_val_lmdb"
@@ -47,12 +47,12 @@ layer {
   bottom: "data"
   top: "conv1/7x7_s2"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 64
@@ -69,15 +69,21 @@ layer {
   }
 }
 layer {
+  name: "BN_00000001"
+  type: "BN"
+  bottom: "conv1/7x7_s2"
+  top: "conv1/7x7_s2/bn"
+}
+layer {
   name: "conv1/relu_7x7"
   type: "ReLU"
-  bottom: "conv1/7x7_s2"
-  top: "conv1/7x7_s2"
+  bottom: "conv1/7x7_s2/bn"
+  top: "conv1/7x7_s2/bn"
 }
 layer {
   name: "pool1/3x3_s2"
   type: "Pooling"
-  bottom: "conv1/7x7_s2"
+  bottom: "conv1/7x7_s2/bn"
   top: "pool1/3x3_s2"
   pooling_param {
     pool: MAX
@@ -102,12 +108,12 @@ layer {
   bottom: "pool1/norm1"
   top: "conv2/3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 64
@@ -122,23 +128,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000002"
+  type: "BN"
+  bottom: "conv2/3x3_reduce"
+  top: "conv2/3x3_reduce/bn"
+}
+layer {
   name: "conv2/relu_3x3_reduce"
   type: "ReLU"
-  bottom: "conv2/3x3_reduce"
-  top: "conv2/3x3_reduce"
+  bottom: "conv2/3x3_reduce/bn"
+  top: "conv2/3x3_reduce/bn"
 }
 layer {
   name: "conv2/3x3"
   type: "Convolution"
-  bottom: "conv2/3x3_reduce"
+  bottom: "conv2/3x3_reduce/bn"
   top: "conv2/3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 192
@@ -154,15 +166,21 @@ layer {
   }
 }
 layer {
+  name: "BN_00000003"
+  type: "BN"
+  bottom: "conv2/3x3"
+  top: "conv2/3x3/bn"
+}
+layer {
   name: "conv2/relu_3x3"
   type: "ReLU"
-  bottom: "conv2/3x3"
-  top: "conv2/3x3"
+  bottom: "conv2/3x3/bn"
+  top: "conv2/3x3/bn"
 }
 layer {
   name: "conv2/norm2"
   type: "LRN"
-  bottom: "conv2/3x3"
+  bottom: "conv2/3x3/bn"
   top: "conv2/norm2"
   lrn_param {
     local_size: 5
@@ -187,12 +205,12 @@ layer {
   bottom: "pool2/3x3_s2"
   top: "inception_3a/1x1"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 64
@@ -207,10 +225,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000004"
+  type: "BN"
+  bottom: "inception_3a/1x1"
+  top: "inception_3a/1x1/bn"
+}
+layer {
   name: "inception_3a/relu_1x1"
   type: "ReLU"
-  bottom: "inception_3a/1x1"
-  top: "inception_3a/1x1"
+  bottom: "inception_3a/1x1/bn"
+  top: "inception_3a/1x1/bn"
 }
 layer {
   name: "inception_3a/3x3_reduce"
@@ -218,12 +242,12 @@ layer {
   bottom: "pool2/3x3_s2"
   top: "inception_3a/3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 64
@@ -238,23 +262,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000005"
+  type: "BN"
+  bottom: "inception_3a/3x3_reduce"
+  top: "inception_3a/3x3_reduce/bn"
+}
+layer {
   name: "inception_3a/relu_3x3_reduce"
   type: "ReLU"
-  bottom: "inception_3a/3x3_reduce"
-  top: "inception_3a/3x3_reduce"
+  bottom: "inception_3a/3x3_reduce/bn"
+  top: "inception_3a/3x3_reduce/bn"
 }
 layer {
   name: "inception_3a/3x3"
   type: "Convolution"
-  bottom: "inception_3a/3x3_reduce"
+  bottom: "inception_3a/3x3_reduce/bn"
   top: "inception_3a/3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 64
@@ -270,10 +300,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000006"
+  type: "BN"
+  bottom: "inception_3a/3x3"
+  top: "inception_3a/3x3/bn"
+}
+layer {
   name: "inception_3a/relu_3x3"
   type: "ReLU"
-  bottom: "inception_3a/3x3"
-  top: "inception_3a/3x3"
+  bottom: "inception_3a/3x3/bn"
+  top: "inception_3a/3x3/bn"
 }
 layer {
   name: "inception_3a/double3x3_reduce"
@@ -281,12 +317,12 @@ layer {
   bottom: "pool2/3x3_s2"
   top: "inception_3a/double3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 64
@@ -301,23 +337,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000007"
+  type: "BN"
+  bottom: "inception_3a/double3x3_reduce"
+  top: "inception_3a/double3x3_reduce/bn"
+}
+layer {
   name: "inception_3a/relu_double3x3_reduce"
   type: "ReLU"
-  bottom: "inception_3a/double3x3_reduce"
-  top: "inception_3a/double3x3_reduce"
+  bottom: "inception_3a/double3x3_reduce/bn"
+  top: "inception_3a/double3x3_reduce/bn"
 }
 layer {
   name: "inception_3a/double3x3_mid"
   type: "Convolution"
-  bottom: "inception_3a/double3x3_reduce"
+  bottom: "inception_3a/double3x3_reduce/bn"
   top: "inception_3a/double3x3_mid"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 96
@@ -331,25 +373,31 @@ layer {
       value: 0.2
     }
   }
+}
+layer {
+  name: "BN_00000008"
+  type: "BN"
+  bottom: "inception_3a/double3x3_mid"
+  top: "inception_3a/double3x3_mid/bn"
 }
 layer {
   name: "inception_3a/relu_double3x3_mid"
   type: "ReLU"
-  bottom: "inception_3a/double3x3_mid"
-  top: "inception_3a/double3x3_mid"
+  bottom: "inception_3a/double3x3_mid/bn"
+  top: "inception_3a/double3x3_mid/bn"
 }
 layer {
   name: "inception_3a/double3x3"
   type: "Convolution"
-  bottom: "inception_3a/double3x3_mid"
+  bottom: "inception_3a/double3x3_mid/bn"
   top: "inception_3a/double3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 96
@@ -365,10 +413,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000009"
+  type: "BN"
+  bottom: "inception_3a/double3x3"
+  top: "inception_3a/double3x3/bn"
+}
+layer {
   name: "inception_3a/relu_double3x3"
   type: "ReLU"
-  bottom: "inception_3a/double3x3"
-  top: "inception_3a/double3x3"
+  bottom: "inception_3a/double3x3/bn"
+  top: "inception_3a/double3x3/bn"
 }
 layer {
   name: "inception_3a/pool"
@@ -388,12 +442,12 @@ layer {
   bottom: "inception_3a/pool"
   top: "inception_3a/pool_proj"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 32
@@ -408,18 +462,24 @@ layer {
   }
 }
 layer {
+  name: "BN_00000010"
+  type: "BN"
+  bottom: "inception_3a/pool_proj"
+  top: "inception_3a/pool_proj/bn"
+}
+layer {
   name: "inception_3a/relu_pool_proj"
   type: "ReLU"
-  bottom: "inception_3a/pool_proj"
-  top: "inception_3a/pool_proj"
+  bottom: "inception_3a/pool_proj/bn"
+  top: "inception_3a/pool_proj/bn"
 }
 layer {
   name: "inception_3a/output"
   type: "Concat"
-  bottom: "inception_3a/1x1"
-  bottom: "inception_3a/3x3"
-  bottom: "inception_3a/double3x3"
-  bottom: "inception_3a/pool_proj"
+  bottom: "inception_3a/1x1/bn"
+  bottom: "inception_3a/3x3/bn"
+  bottom: "inception_3a/double3x3/bn"
+  bottom: "inception_3a/pool_proj/bn"
   top: "inception_3a/output"
 }
 layer {
@@ -428,12 +488,12 @@ layer {
   bottom: "inception_3a/output"
   top: "inception_3b/1x1"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 64
@@ -448,10 +508,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000011"
+  type: "BN"
+  bottom: "inception_3b/1x1"
+  top: "inception_3b/1x1/bn"
+}
+layer {
   name: "inception_3b/relu_1x1"
   type: "ReLU"
-  bottom: "inception_3b/1x1"
-  top: "inception_3b/1x1"
+  bottom: "inception_3b/1x1/bn"
+  top: "inception_3b/1x1/bn"
 }
 layer {
   name: "inception_3b/3x3_reduce"
@@ -459,12 +525,12 @@ layer {
   bottom: "inception_3a/output"
   top: "inception_3b/3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 64
@@ -479,23 +545,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000012"
+  type: "BN"
+  bottom: "inception_3b/3x3_reduce"
+  top: "inception_3b/3x3_reduce/bn"
+}
+layer {
   name: "inception_3b/relu_3x3_reduce"
   type: "ReLU"
-  bottom: "inception_3b/3x3_reduce"
-  top: "inception_3b/3x3_reduce"
+  bottom: "inception_3b/3x3_reduce/bn"
+  top: "inception_3b/3x3_reduce/bn"
 }
 layer {
   name: "inception_3b/3x3"
   type: "Convolution"
-  bottom: "inception_3b/3x3_reduce"
+  bottom: "inception_3b/3x3_reduce/bn"
   top: "inception_3b/3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 96
@@ -511,10 +583,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000013"
+  type: "BN"
+  bottom: "inception_3b/3x3"
+  top: "inception_3b/3x3/bn"
+}
+layer {
   name: "inception_3b/relu_3x3"
   type: "ReLU"
-  bottom: "inception_3b/3x3"
-  top: "inception_3b/3x3"
+  bottom: "inception_3b/3x3/bn"
+  top: "inception_3b/3x3/bn"
 }
 layer {
   name: "inception_3b/double3x3_reduce"
@@ -522,12 +600,12 @@ layer {
   bottom: "inception_3a/output"
   top: "inception_3b/double3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 64
@@ -542,23 +620,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000014"
+  type: "BN"
+  bottom: "inception_3b/double3x3_reduce"
+  top: "inception_3b/double3x3_reduce/bn"
+}
+layer {
   name: "inception_3b/relu_double3x3_reduce"
   type: "ReLU"
-  bottom: "inception_3b/double3x3_reduce"
-  top: "inception_3b/double3x3_reduce"
+  bottom: "inception_3b/double3x3_reduce/bn"
+  top: "inception_3b/double3x3_reduce/bn"
 }
 layer {
   name: "inception_3b/double3x3_mid"
   type: "Convolution"
-  bottom: "inception_3b/double3x3_reduce"
+  bottom: "inception_3b/double3x3_reduce/bn"
   top: "inception_3b/double3x3_mid"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 96
@@ -572,25 +656,31 @@ layer {
       value: 0.2
     }
   }
+}
+layer {
+  name: "BN_00000015"
+  type: "BN"
+  bottom: "inception_3b/double3x3_mid"
+  top: "inception_3b/double3x3_mid/bn"
 }
 layer {
   name: "inception_3b/relu_double3x3_mid"
   type: "ReLU"
-  bottom: "inception_3b/double3x3_mid"
-  top: "inception_3b/double3x3_mid"
+  bottom: "inception_3b/double3x3_mid/bn"
+  top: "inception_3b/double3x3_mid/bn"
 }
 layer {
   name: "inception_3b/double3x3"
   type: "Convolution"
-  bottom: "inception_3b/double3x3_mid"
+  bottom: "inception_3b/double3x3_mid/bn"
   top: "inception_3b/double3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 96
@@ -606,10 +696,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000016"
+  type: "BN"
+  bottom: "inception_3b/double3x3"
+  top: "inception_3b/double3x3/bn"
+}
+layer {
   name: "inception_3b/relu_double3x3"
   type: "ReLU"
-  bottom: "inception_3b/double3x3"
-  top: "inception_3b/double3x3"
+  bottom: "inception_3b/double3x3/bn"
+  top: "inception_3b/double3x3/bn"
 }
 layer {
   name: "inception_3b/pool"
@@ -629,12 +725,12 @@ layer {
   bottom: "inception_3b/pool"
   top: "inception_3b/pool_proj"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 64
@@ -649,18 +745,24 @@ layer {
   }
 }
 layer {
+  name: "BN_00000017"
+  type: "BN"
+  bottom: "inception_3b/pool_proj"
+  top: "inception_3b/pool_proj/bn"
+}
+layer {
   name: "inception_3b/relu_pool_proj"
   type: "ReLU"
-  bottom: "inception_3b/pool_proj"
-  top: "inception_3b/pool_proj"
+  bottom: "inception_3b/pool_proj/bn"
+  top: "inception_3b/pool_proj/bn"
 }
 layer {
   name: "inception_3b/output"
   type: "Concat"
-  bottom: "inception_3b/1x1"
-  bottom: "inception_3b/3x3"
-  bottom: "inception_3b/double3x3"
-  bottom: "inception_3b/pool_proj"
+  bottom: "inception_3b/1x1/bn"
+  bottom: "inception_3b/3x3/bn"
+  bottom: "inception_3b/double3x3/bn"
+  bottom: "inception_3b/pool_proj/bn"
   top: "inception_3b/output"
 }
 layer {
@@ -669,12 +771,12 @@ layer {
   bottom: "inception_3b/output"
   top: "inception_3c/3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -689,23 +791,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000018"
+  type: "BN"
+  bottom: "inception_3c/3x3_reduce"
+  top: "inception_3c/3x3_reduce/bn"
+}
+layer {
   name: "inception_3c/relu_3x3_reduce"
   type: "ReLU"
-  bottom: "inception_3c/3x3_reduce"
-  top: "inception_3c/3x3_reduce"
+  bottom: "inception_3c/3x3_reduce/bn"
+  top: "inception_3c/3x3_reduce/bn"
 }
 layer {
   name: "inception_3c/3x3_s2"
   type: "Convolution"
-  bottom: "inception_3c/3x3_reduce"
+  bottom: "inception_3c/3x3_reduce/bn"
   top: "inception_3c/3x3_s2"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 160
@@ -722,10 +830,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000019"
+  type: "BN"
+  bottom: "inception_3c/3x3_s2"
+  top: "inception_3c/3x3_s2/bn"
+}
+layer {
   name: "inception_3c/relu_3x3"
   type: "ReLU"
-  bottom: "inception_3c/3x3_s2"
-  top: "inception_3c/3x3_s2"
+  bottom: "inception_3c/3x3_s2/bn"
+  top: "inception_3c/3x3_s2/bn"
 }
 layer {
   name: "inception_3c/double3x3_reduce"
@@ -733,12 +847,12 @@ layer {
   bottom: "inception_3b/output"
   top: "inception_3c/double3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 64
@@ -753,23 +867,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000020"
+  type: "BN"
+  bottom: "inception_3c/double3x3_reduce"
+  top: "inception_3c/double3x3_reduce/bn"
+}
+layer {
   name: "inception_3c/relu_double3x3_reduce"
   type: "ReLU"
-  bottom: "inception_3c/double3x3_reduce"
-  top: "inception_3c/double3x3_reduce"
+  bottom: "inception_3c/double3x3_reduce/bn"
+  top: "inception_3c/double3x3_reduce/bn"
 }
 layer {
   name: "inception_3c/double3x3_mid"
   type: "Convolution"
-  bottom: "inception_3c/double3x3_reduce"
+  bottom: "inception_3c/double3x3_reduce/bn"
   top: "inception_3c/double3x3_mid"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 96
@@ -785,23 +905,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000021"
+  type: "BN"
+  bottom: "inception_3c/double3x3_mid"
+  top: "inception_3c/double3x3_mid/bn"
+}
+layer {
   name: "inception_3c/relu_double3x3_mid"
   type: "ReLU"
-  bottom: "inception_3c/double3x3_mid"
-  top: "inception_3c/double3x3_mid"
+  bottom: "inception_3c/double3x3_mid/bn"
+  top: "inception_3c/double3x3_mid/bn"
 }
 layer {
   name: "inception_3c/double3x3"
   type: "Convolution"
-  bottom: "inception_3c/double3x3_mid"
+  bottom: "inception_3c/double3x3_mid/bn"
   top: "inception_3c/double3x3_s2"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 96
@@ -818,10 +944,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000022"
+  type: "BN"
+  bottom: "inception_3c/double3x3_s2"
+  top: "inception_3c/double3x3_s2/bn"
+}
+layer {
   name: "inception_3c/relu_double3x3"
   type: "ReLU"
-  bottom: "inception_3c/double3x3_s2"
-  top: "inception_3c/double3x3_s2"
+  bottom: "inception_3c/double3x3_s2/bn"
+  top: "inception_3c/double3x3_s2/bn"
 }
 layer {
   name: "inception_3c/pool"
@@ -835,17 +967,23 @@ layer {
   }
 }
 layer {
+  name: "BN_00000023"
+  type: "BN"
+  bottom: "inception_3c/pool"
+  top: "inception_3c/pool/bn"
+}
+layer {
   name: "inception_3c/relu_pool"
   type: "ReLU"
-  bottom: "inception_3c/pool"
-  top: "inception_3c/pool"
+  bottom: "inception_3c/pool/bn"
+  top: "inception_3c/pool/bn"
 }
 layer {
   name: "inception_3c/output"
   type: "Concat"
-  bottom: "inception_3c/3x3_s2"
-  bottom: "inception_3c/double3x3_s2"
-  bottom: "inception_3c/pool"
+  bottom: "inception_3c/3x3_s2/bn"
+  bottom: "inception_3c/double3x3_s2/bn"
+  bottom: "inception_3c/pool/bn"
   top: "inception_3c/output"
 }
 layer {
@@ -854,12 +992,12 @@ layer {
   bottom: "inception_3c/output"
   top: "inception_4a/1x1"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 224
@@ -874,10 +1012,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000024"
+  type: "BN"
+  bottom: "inception_4a/1x1"
+  top: "inception_4a/1x1/bn"
+}
+layer {
   name: "inception_4a/relu_1x1"
   type: "ReLU"
-  bottom: "inception_4a/1x1"
-  top: "inception_4a/1x1"
+  bottom: "inception_4a/1x1/bn"
+  top: "inception_4a/1x1/bn"
 }
 layer {
   name: "inception_4a/3x3_reduce"
@@ -885,12 +1029,12 @@ layer {
   bottom: "inception_3c/output"
   top: "inception_4a/3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 64
@@ -905,23 +1049,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000025"
+  type: "BN"
+  bottom: "inception_4a/3x3_reduce"
+  top: "inception_4a/3x3_reduce/bn"
+}
+layer {
   name: "inception_4a/relu_3x3_reduce"
   type: "ReLU"
-  bottom: "inception_4a/3x3_reduce"
-  top: "inception_4a/3x3_reduce"
+  bottom: "inception_4a/3x3_reduce/bn"
+  top: "inception_4a/3x3_reduce/bn"
 }
 layer {
   name: "inception_4a/3x3"
   type: "Convolution"
-  bottom: "inception_4a/3x3_reduce"
+  bottom: "inception_4a/3x3_reduce/bn"
   top: "inception_4a/3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 96
@@ -937,10 +1087,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000026"
+  type: "BN"
+  bottom: "inception_4a/3x3"
+  top: "inception_4a/3x3/bn"
+}
+layer {
   name: "inception_4a/relu_3x3"
   type: "ReLU"
-  bottom: "inception_4a/3x3"
-  top: "inception_4a/3x3"
+  bottom: "inception_4a/3x3/bn"
+  top: "inception_4a/3x3/bn"
 }
 layer {
   name: "inception_4a/double3x3_reduce"
@@ -948,12 +1104,12 @@ layer {
   bottom: "inception_3c/output"
   top: "inception_4a/double3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 96
@@ -968,23 +1124,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000027"
+  type: "BN"
+  bottom: "inception_4a/double3x3_reduce"
+  top: "inception_4a/double3x3_reduce/bn"
+}
+layer {
   name: "inception_4a/relu_double3x3_reduce"
   type: "ReLU"
-  bottom: "inception_4a/double3x3_reduce"
-  top: "inception_4a/double3x3_reduce"
+  bottom: "inception_4a/double3x3_reduce/bn"
+  top: "inception_4a/double3x3_reduce/bn"
 }
 layer {
   name: "inception_4a/double3x3_mid"
   type: "Convolution"
-  bottom: "inception_4a/double3x3_reduce"
+  bottom: "inception_4a/double3x3_reduce/bn"
   top: "inception_4a/double3x3_mid"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -998,25 +1160,31 @@ layer {
       value: 0.2
     }
   }
+}
+layer {
+  name: "BN_00000028"
+  type: "BN"
+  bottom: "inception_4a/double3x3_mid"
+  top: "inception_4a/double3x3_mid/bn"
 }
 layer {
   name: "inception_4a/relu_double3x3_mid"
   type: "ReLU"
-  bottom: "inception_4a/double3x3_mid"
-  top: "inception_4a/double3x3_mid"
+  bottom: "inception_4a/double3x3_mid/bn"
+  top: "inception_4a/double3x3_mid/bn"
 }
 layer {
   name: "inception_4a/double3x3"
   type: "Convolution"
-  bottom: "inception_4a/double3x3_mid"
+  bottom: "inception_4a/double3x3_mid/bn"
   top: "inception_4a/double3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -1032,10 +1200,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000029"
+  type: "BN"
+  bottom: "inception_4a/double3x3"
+  top: "inception_4a/double3x3/bn"
+}
+layer {
   name: "inception_4a/relu_double3x3"
   type: "ReLU"
-  bottom: "inception_4a/double3x3"
-  top: "inception_4a/double3x3"
+  bottom: "inception_4a/double3x3/bn"
+  top: "inception_4a/double3x3/bn"
 }
 layer {
   name: "inception_4a/pool"
@@ -1055,12 +1229,12 @@ layer {
   bottom: "inception_4a/pool"
   top: "inception_4a/pool_proj"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -1075,18 +1249,24 @@ layer {
   }
 }
 layer {
+  name: "BN_00000030"
+  type: "BN"
+  bottom: "inception_4a/pool_proj"
+  top: "inception_4a/pool_proj/bn"
+}
+layer {
   name: "inception_4a/relu_pool_proj"
   type: "ReLU"
-  bottom: "inception_4a/pool_proj"
-  top: "inception_4a/pool_proj"
+  bottom: "inception_4a/pool_proj/bn"
+  top: "inception_4a/pool_proj/bn"
 }
 layer {
   name: "inception_4a/output"
   type: "Concat"
-  bottom: "inception_4a/1x1"
-  bottom: "inception_4a/3x3"
-  bottom: "inception_4a/double3x3"
-  bottom: "inception_4a/pool_proj"
+  bottom: "inception_4a/1x1/bn"
+  bottom: "inception_4a/3x3/bn"
+  bottom: "inception_4a/double3x3/bn"
+  bottom: "inception_4a/pool_proj/bn"
   top: "inception_4a/output"
 }
 layer {
@@ -1106,12 +1286,12 @@ layer {
   bottom: "loss1/ave_pool"
   top: "loss1/conv"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -1126,23 +1306,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000031"
+  type: "BN"
+  bottom: "loss1/conv"
+  top: "loss1/conv/bn"
+}
+layer {
   name: "loss1/relu_conv"
   type: "ReLU"
-  bottom: "loss1/conv"
-  top: "loss1/conv"
+  bottom: "loss1/conv/bn"
+  top: "loss1/conv/bn"
 }
 layer {
   name: "loss1/fc"
   type: "InnerProduct"
-  bottom: "loss1/conv"
+  bottom: "loss1/conv/bn"
   top: "loss1/fc"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   inner_product_param {
     num_output: 1024
@@ -1156,16 +1342,22 @@ layer {
   }
 }
 layer {
+  name: "BN_00000032"
+  type: "BN"
+  bottom: "loss1/fc"
+  top: "loss1/fc/bn"
+}
+layer {
   name: "loss1/relu_fc"
   type: "ReLU"
-  bottom: "loss1/fc"
-  top: "loss1/fc"
+  bottom: "loss1/fc/bn"
+  top: "loss1/fc/bn"
 }
 layer {
   name: "loss1/drop_fc"
   type: "Dropout"
-  bottom: "loss1/fc"
-  top: "loss1/fc"
+  bottom: "loss1/fc/bn"
+  top: "loss1/fc/bn"
   dropout_param {
     dropout_ratio: 0.7
   }
@@ -1173,15 +1365,15 @@ layer {
 layer {
   name: "loss1/classifier"
   type: "InnerProduct"
-  bottom: "loss1/fc"
+  bottom: "loss1/fc/bn"
   top: "loss1/classifier"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   inner_product_param {
     num_output: 1000
@@ -1190,7 +1382,7 @@ layer {
     }
     bias_filler {
       type: "constant"
-      value: 0
+      value: 0.0
     }
   }
 }
@@ -1231,12 +1423,12 @@ layer {
   bottom: "inception_4a/output"
   top: "inception_4b/1x1"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 192
@@ -1251,10 +1443,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000033"
+  type: "BN"
+  bottom: "inception_4b/1x1"
+  top: "inception_4b/1x1/bn"
+}
+layer {
   name: "inception_4b/relu_1x1"
   type: "ReLU"
-  bottom: "inception_4b/1x1"
-  top: "inception_4b/1x1"
+  bottom: "inception_4b/1x1/bn"
+  top: "inception_4b/1x1/bn"
 }
 layer {
   name: "inception_4b/3x3_reduce"
@@ -1262,12 +1460,12 @@ layer {
   bottom: "inception_4a/output"
   top: "inception_4b/3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 96
@@ -1282,23 +1480,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000034"
+  type: "BN"
+  bottom: "inception_4b/3x3_reduce"
+  top: "inception_4b/3x3_reduce/bn"
+}
+layer {
   name: "inception_4b/relu_3x3_reduce"
   type: "ReLU"
-  bottom: "inception_4b/3x3_reduce"
-  top: "inception_4b/3x3_reduce"
+  bottom: "inception_4b/3x3_reduce/bn"
+  top: "inception_4b/3x3_reduce/bn"
 }
 layer {
   name: "inception_4b/3x3"
   type: "Convolution"
-  bottom: "inception_4b/3x3_reduce"
+  bottom: "inception_4b/3x3_reduce/bn"
   top: "inception_4b/3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -1314,10 +1518,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000035"
+  type: "BN"
+  bottom: "inception_4b/3x3"
+  top: "inception_4b/3x3/bn"
+}
+layer {
   name: "inception_4b/relu_3x3"
   type: "ReLU"
-  bottom: "inception_4b/3x3"
-  top: "inception_4b/3x3"
+  bottom: "inception_4b/3x3/bn"
+  top: "inception_4b/3x3/bn"
 }
 layer {
   name: "inception_4b/double3x3_reduce"
@@ -1325,12 +1535,12 @@ layer {
   bottom: "inception_4a/output"
   top: "inception_4b/double3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 96
@@ -1345,23 +1555,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000036"
+  type: "BN"
+  bottom: "inception_4b/double3x3_reduce"
+  top: "inception_4b/double3x3_reduce/bn"
+}
+layer {
   name: "inception_4b/relu_double3x3_reduce"
   type: "ReLU"
-  bottom: "inception_4b/double3x3_reduce"
-  top: "inception_4b/double3x3_reduce"
+  bottom: "inception_4b/double3x3_reduce/bn"
+  top: "inception_4b/double3x3_reduce/bn"
 }
 layer {
   name: "inception_4b/double3x3_mid"
   type: "Convolution"
-  bottom: "inception_4b/double3x3_reduce"
+  bottom: "inception_4b/double3x3_reduce/bn"
   top: "inception_4b/double3x3_mid"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -1375,25 +1591,31 @@ layer {
       value: 0.2
     }
   }
+}
+layer {
+  name: "BN_00000037"
+  type: "BN"
+  bottom: "inception_4b/double3x3_mid"
+  top: "inception_4b/double3x3_mid/bn"
 }
 layer {
   name: "inception_4b/relu_double3x3_mid"
   type: "ReLU"
-  bottom: "inception_4b/double3x3_mid"
-  top: "inception_4b/double3x3_mid"
+  bottom: "inception_4b/double3x3_mid/bn"
+  top: "inception_4b/double3x3_mid/bn"
 }
 layer {
   name: "inception_4b/double3x3"
   type: "Convolution"
-  bottom: "inception_4b/double3x3_mid"
+  bottom: "inception_4b/double3x3_mid/bn"
   top: "inception_4b/double3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -1409,10 +1631,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000038"
+  type: "BN"
+  bottom: "inception_4b/double3x3"
+  top: "inception_4b/double3x3/bn"
+}
+layer {
   name: "inception_4b/relu_double3x3"
   type: "ReLU"
-  bottom: "inception_4b/double3x3"
-  top: "inception_4b/double3x3"
+  bottom: "inception_4b/double3x3/bn"
+  top: "inception_4b/double3x3/bn"
 }
 layer {
   name: "inception_4b/pool"
@@ -1432,12 +1660,12 @@ layer {
   bottom: "inception_4b/pool"
   top: "inception_4b/pool_proj"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -1452,18 +1680,24 @@ layer {
   }
 }
 layer {
+  name: "BN_00000039"
+  type: "BN"
+  bottom: "inception_4b/pool_proj"
+  top: "inception_4b/pool_proj/bn"
+}
+layer {
   name: "inception_4b/relu_pool_proj"
   type: "ReLU"
-  bottom: "inception_4b/pool_proj"
-  top: "inception_4b/pool_proj"
+  bottom: "inception_4b/pool_proj/bn"
+  top: "inception_4b/pool_proj/bn"
 }
 layer {
   name: "inception_4b/output"
   type: "Concat"
-  bottom: "inception_4b/1x1"
-  bottom: "inception_4b/3x3"
-  bottom: "inception_4b/double3x3"
-  bottom: "inception_4b/pool_proj"
+  bottom: "inception_4b/1x1/bn"
+  bottom: "inception_4b/3x3/bn"
+  bottom: "inception_4b/double3x3/bn"
+  bottom: "inception_4b/pool_proj/bn"
   top: "inception_4b/output"
 }
 layer {
@@ -1472,12 +1706,12 @@ layer {
   bottom: "inception_4b/output"
   top: "inception_4c/1x1"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 160
@@ -1492,10 +1726,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000040"
+  type: "BN"
+  bottom: "inception_4c/1x1"
+  top: "inception_4c/1x1/bn"
+}
+layer {
   name: "inception_4c/relu_1x1"
   type: "ReLU"
-  bottom: "inception_4c/1x1"
-  top: "inception_4c/1x1"
+  bottom: "inception_4c/1x1/bn"
+  top: "inception_4c/1x1/bn"
 }
 layer {
   name: "inception_4c/3x3_reduce"
@@ -1503,12 +1743,12 @@ layer {
   bottom: "inception_4b/output"
   top: "inception_4c/3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -1523,23 +1763,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000041"
+  type: "BN"
+  bottom: "inception_4c/3x3_reduce"
+  top: "inception_4c/3x3_reduce/bn"
+}
+layer {
   name: "inception_4c/relu_3x3_reduce"
   type: "ReLU"
-  bottom: "inception_4c/3x3_reduce"
-  top: "inception_4c/3x3_reduce"
+  bottom: "inception_4c/3x3_reduce/bn"
+  top: "inception_4c/3x3_reduce/bn"
 }
 layer {
   name: "inception_4c/3x3"
   type: "Convolution"
-  bottom: "inception_4c/3x3_reduce"
+  bottom: "inception_4c/3x3_reduce/bn"
   top: "inception_4c/3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 160
@@ -1555,10 +1801,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000042"
+  type: "BN"
+  bottom: "inception_4c/3x3"
+  top: "inception_4c/3x3/bn"
+}
+layer {
   name: "inception_4c/relu_3x3"
   type: "ReLU"
-  bottom: "inception_4c/3x3"
-  top: "inception_4c/3x3"
+  bottom: "inception_4c/3x3/bn"
+  top: "inception_4c/3x3/bn"
 }
 layer {
   name: "inception_4c/double3x3_reduce"
@@ -1566,12 +1818,12 @@ layer {
   bottom: "inception_4b/output"
   top: "inception_4c/double3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -1586,23 +1838,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000043"
+  type: "BN"
+  bottom: "inception_4c/double3x3_reduce"
+  top: "inception_4c/double3x3_reduce/bn"
+}
+layer {
   name: "inception_4c/relu_double3x3_reduce"
   type: "ReLU"
-  bottom: "inception_4c/double3x3_reduce"
-  top: "inception_4c/double3x3_reduce"
+  bottom: "inception_4c/double3x3_reduce/bn"
+  top: "inception_4c/double3x3_reduce/bn"
 }
 layer {
   name: "inception_4c/double3x3_mid"
   type: "Convolution"
-  bottom: "inception_4c/double3x3_reduce"
+  bottom: "inception_4c/double3x3_reduce/bn"
   top: "inception_4c/double3x3_mid"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 160
@@ -1616,25 +1874,31 @@ layer {
       value: 0.2
     }
   }
+}
+layer {
+  name: "BN_00000044"
+  type: "BN"
+  bottom: "inception_4c/double3x3_mid"
+  top: "inception_4c/double3x3_mid/bn"
 }
 layer {
   name: "inception_4c/relu_double3x3_mid"
   type: "ReLU"
-  bottom: "inception_4c/double3x3_mid"
-  top: "inception_4c/double3x3_mid"
+  bottom: "inception_4c/double3x3_mid/bn"
+  top: "inception_4c/double3x3_mid/bn"
 }
 layer {
   name: "inception_4c/double3x3"
   type: "Convolution"
-  bottom: "inception_4c/double3x3_mid"
+  bottom: "inception_4c/double3x3_mid/bn"
   top: "inception_4c/double3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 160
@@ -1650,10 +1914,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000045"
+  type: "BN"
+  bottom: "inception_4c/double3x3"
+  top: "inception_4c/double3x3/bn"
+}
+layer {
   name: "inception_4c/relu_double3x3"
   type: "ReLU"
-  bottom: "inception_4c/double3x3"
-  top: "inception_4c/double3x3"
+  bottom: "inception_4c/double3x3/bn"
+  top: "inception_4c/double3x3/bn"
 }
 layer {
   name: "inception_4c/pool"
@@ -1673,12 +1943,12 @@ layer {
   bottom: "inception_4c/pool"
   top: "inception_4c/pool_proj"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -1693,18 +1963,24 @@ layer {
   }
 }
 layer {
+  name: "BN_00000046"
+  type: "BN"
+  bottom: "inception_4c/pool_proj"
+  top: "inception_4c/pool_proj/bn"
+}
+layer {
   name: "inception_4c/relu_pool_proj"
   type: "ReLU"
-  bottom: "inception_4c/pool_proj"
-  top: "inception_4c/pool_proj"
+  bottom: "inception_4c/pool_proj/bn"
+  top: "inception_4c/pool_proj/bn"
 }
 layer {
   name: "inception_4c/output"
   type: "Concat"
-  bottom: "inception_4c/1x1"
-  bottom: "inception_4c/3x3"
-  bottom: "inception_4c/double3x3"
-  bottom: "inception_4c/pool_proj"
+  bottom: "inception_4c/1x1/bn"
+  bottom: "inception_4c/3x3/bn"
+  bottom: "inception_4c/double3x3/bn"
+  bottom: "inception_4c/pool_proj/bn"
   top: "inception_4c/output"
 }
 layer {
@@ -1713,12 +1989,12 @@ layer {
   bottom: "inception_4c/output"
   top: "inception_4d/1x1"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 96
@@ -1733,10 +2009,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000047"
+  type: "BN"
+  bottom: "inception_4d/1x1"
+  top: "inception_4d/1x1/bn"
+}
+layer {
   name: "inception_4d/relu_1x1"
   type: "ReLU"
-  bottom: "inception_4d/1x1"
-  top: "inception_4d/1x1"
+  bottom: "inception_4d/1x1/bn"
+  top: "inception_4d/1x1/bn"
 }
 layer {
   name: "inception_4d/3x3_reduce"
@@ -1744,12 +2026,12 @@ layer {
   bottom: "inception_4c/output"
   top: "inception_4d/3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -1764,23 +2046,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000048"
+  type: "BN"
+  bottom: "inception_4d/3x3_reduce"
+  top: "inception_4d/3x3_reduce/bn"
+}
+layer {
   name: "inception_4d/relu_3x3_reduce"
   type: "ReLU"
-  bottom: "inception_4d/3x3_reduce"
-  top: "inception_4d/3x3_reduce"
+  bottom: "inception_4d/3x3_reduce/bn"
+  top: "inception_4d/3x3_reduce/bn"
 }
 layer {
   name: "inception_4d/3x3"
   type: "Convolution"
-  bottom: "inception_4d/3x3_reduce"
+  bottom: "inception_4d/3x3_reduce/bn"
   top: "inception_4d/3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 192
@@ -1796,10 +2084,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000049"
+  type: "BN"
+  bottom: "inception_4d/3x3"
+  top: "inception_4d/3x3/bn"
+}
+layer {
   name: "inception_4d/relu_3x3"
   type: "ReLU"
-  bottom: "inception_4d/3x3"
-  top: "inception_4d/3x3"
+  bottom: "inception_4d/3x3/bn"
+  top: "inception_4d/3x3/bn"
 }
 layer {
   name: "inception_4d/double3x3_reduce"
@@ -1807,12 +2101,12 @@ layer {
   bottom: "inception_4c/output"
   top: "inception_4d/double3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 160
@@ -1827,23 +2121,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000050"
+  type: "BN"
+  bottom: "inception_4d/double3x3_reduce"
+  top: "inception_4d/double3x3_reduce/bn"
+}
+layer {
   name: "inception_4d/relu_double3x3_reduce"
   type: "ReLU"
-  bottom: "inception_4d/double3x3_reduce"
-  top: "inception_4d/double3x3_reduce"
+  bottom: "inception_4d/double3x3_reduce/bn"
+  top: "inception_4d/double3x3_reduce/bn"
 }
 layer {
   name: "inception_4d/double3x3_mid"
   type: "Convolution"
-  bottom: "inception_4d/double3x3_reduce"
+  bottom: "inception_4d/double3x3_reduce/bn"
   top: "inception_4d/double3x3_mid"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 192
@@ -1857,25 +2157,31 @@ layer {
       value: 0.2
     }
   }
+}
+layer {
+  name: "BN_00000051"
+  type: "BN"
+  bottom: "inception_4d/double3x3_mid"
+  top: "inception_4d/double3x3_mid/bn"
 }
 layer {
   name: "inception_4d/relu_double3x3_mid"
   type: "ReLU"
-  bottom: "inception_4d/double3x3_mid"
-  top: "inception_4d/double3x3_mid"
+  bottom: "inception_4d/double3x3_mid/bn"
+  top: "inception_4d/double3x3_mid/bn"
 }
 layer {
   name: "inception_4d/double3x3"
   type: "Convolution"
-  bottom: "inception_4d/double3x3_mid"
+  bottom: "inception_4d/double3x3_mid/bn"
   top: "inception_4d/double3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 192
@@ -1891,10 +2197,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000052"
+  type: "BN"
+  bottom: "inception_4d/double3x3"
+  top: "inception_4d/double3x3/bn"
+}
+layer {
   name: "inception_4d/relu_double3x3"
   type: "ReLU"
-  bottom: "inception_4d/double3x3"
-  top: "inception_4d/double3x3"
+  bottom: "inception_4d/double3x3/bn"
+  top: "inception_4d/double3x3/bn"
 }
 layer {
   name: "inception_4d/pool"
@@ -1914,12 +2226,12 @@ layer {
   bottom: "inception_4d/pool"
   top: "inception_4d/pool_proj"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -1934,18 +2246,24 @@ layer {
   }
 }
 layer {
+  name: "BN_00000053"
+  type: "BN"
+  bottom: "inception_4d/pool_proj"
+  top: "inception_4d/pool_proj/bn"
+}
+layer {
   name: "inception_4d/relu_pool_proj"
   type: "ReLU"
-  bottom: "inception_4d/pool_proj"
-  top: "inception_4d/pool_proj"
+  bottom: "inception_4d/pool_proj/bn"
+  top: "inception_4d/pool_proj/bn"
 }
 layer {
   name: "inception_4d/output"
   type: "Concat"
-  bottom: "inception_4d/1x1"
-  bottom: "inception_4d/3x3"
-  bottom: "inception_4d/double3x3"
-  bottom: "inception_4d/pool_proj"
+  bottom: "inception_4d/1x1/bn"
+  bottom: "inception_4d/3x3/bn"
+  bottom: "inception_4d/double3x3/bn"
+  bottom: "inception_4d/pool_proj/bn"
   top: "inception_4d/output"
 }
 layer {
@@ -1965,12 +2283,12 @@ layer {
   bottom: "loss2/ave_pool"
   top: "loss2/conv"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -1985,23 +2303,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000054"
+  type: "BN"
+  bottom: "loss2/conv"
+  top: "loss2/conv/bn"
+}
+layer {
   name: "loss2/relu_conv"
   type: "ReLU"
-  bottom: "loss2/conv"
-  top: "loss2/conv"
+  bottom: "loss2/conv/bn"
+  top: "loss2/conv/bn"
 }
 layer {
   name: "loss2/fc"
   type: "InnerProduct"
-  bottom: "loss2/conv"
+  bottom: "loss2/conv/bn"
   top: "loss2/fc"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   inner_product_param {
     num_output: 1024
@@ -2015,16 +2339,22 @@ layer {
   }
 }
 layer {
+  name: "BN_00000055"
+  type: "BN"
+  bottom: "loss2/fc"
+  top: "loss2/fc/bn"
+}
+layer {
   name: "loss2/relu_fc"
   type: "ReLU"
-  bottom: "loss2/fc"
-  top: "loss2/fc"
+  bottom: "loss2/fc/bn"
+  top: "loss2/fc/bn"
 }
 layer {
   name: "loss2/drop_fc"
   type: "Dropout"
-  bottom: "loss2/fc"
-  top: "loss2/fc"
+  bottom: "loss2/fc/bn"
+  top: "loss2/fc/bn"
   dropout_param {
     dropout_ratio: 0.7
   }
@@ -2032,15 +2362,15 @@ layer {
 layer {
   name: "loss2/classifier"
   type: "InnerProduct"
-  bottom: "loss2/fc"
+  bottom: "loss2/fc/bn"
   top: "loss2/classifier"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   inner_product_param {
     num_output: 1000
@@ -2049,7 +2379,7 @@ layer {
     }
     bias_filler {
       type: "constant"
-      value: 0
+      value: 0.0
     }
   }
 }
@@ -2090,12 +2420,12 @@ layer {
   bottom: "inception_4d/output"
   top: "inception_4e/3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -2110,23 +2440,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000056"
+  type: "BN"
+  bottom: "inception_4e/3x3_reduce"
+  top: "inception_4e/3x3_reduce/bn"
+}
+layer {
   name: "inception_4e/relu_3x3_reduce"
   type: "ReLU"
-  bottom: "inception_4e/3x3_reduce"
-  top: "inception_4e/3x3_reduce"
+  bottom: "inception_4e/3x3_reduce/bn"
+  top: "inception_4e/3x3_reduce/bn"
 }
 layer {
   name: "inception_4e/3x3_s2"
   type: "Convolution"
-  bottom: "inception_4e/3x3_reduce"
+  bottom: "inception_4e/3x3_reduce/bn"
   top: "inception_4e/3x3_s2"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 192
@@ -2143,10 +2479,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000057"
+  type: "BN"
+  bottom: "inception_4e/3x3_s2"
+  top: "inception_4e/3x3_s2/bn"
+}
+layer {
   name: "inception_4e/relu_3x3"
   type: "ReLU"
-  bottom: "inception_4e/3x3_s2"
-  top: "inception_4e/3x3_s2"
+  bottom: "inception_4e/3x3_s2/bn"
+  top: "inception_4e/3x3_s2/bn"
 }
 layer {
   name: "inception_4e/double3x3_reduce"
@@ -2154,12 +2496,12 @@ layer {
   bottom: "inception_4d/output"
   top: "inception_4e/double3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 192
@@ -2174,23 +2516,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000058"
+  type: "BN"
+  bottom: "inception_4e/double3x3_reduce"
+  top: "inception_4e/double3x3_reduce/bn"
+}
+layer {
   name: "inception_4e/relu_double3x3_reduce"
   type: "ReLU"
-  bottom: "inception_4e/double3x3_reduce"
-  top: "inception_4e/double3x3_reduce"
+  bottom: "inception_4e/double3x3_reduce/bn"
+  top: "inception_4e/double3x3_reduce/bn"
 }
 layer {
   name: "inception_4e/double3x3_mid"
   type: "Convolution"
-  bottom: "inception_4e/double3x3_reduce"
+  bottom: "inception_4e/double3x3_reduce/bn"
   top: "inception_4e/double3x3_mid"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 256
@@ -2206,23 +2554,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000059"
+  type: "BN"
+  bottom: "inception_4e/double3x3_mid"
+  top: "inception_4e/double3x3_mid/bn"
+}
+layer {
   name: "inception_4e/relu_double3x3_mid"
   type: "ReLU"
-  bottom: "inception_4e/double3x3_mid"
-  top: "inception_4e/double3x3_mid"
+  bottom: "inception_4e/double3x3_mid/bn"
+  top: "inception_4e/double3x3_mid/bn"
 }
 layer {
   name: "inception_4e/double3x3"
   type: "Convolution"
-  bottom: "inception_4e/double3x3_mid"
+  bottom: "inception_4e/double3x3_mid/bn"
   top: "inception_4e/double3x3_s2"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 256
@@ -2239,10 +2593,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000060"
+  type: "BN"
+  bottom: "inception_4e/double3x3_s2"
+  top: "inception_4e/double3x3_s2/bn"
+}
+layer {
   name: "inception_4e/relu_double3x3"
   type: "ReLU"
-  bottom: "inception_4e/double3x3_s2"
-  top: "inception_4e/double3x3_s2"
+  bottom: "inception_4e/double3x3_s2/bn"
+  top: "inception_4e/double3x3_s2/bn"
 }
 layer {
   name: "inception_4e/pool"
@@ -2256,17 +2616,23 @@ layer {
   }
 }
 layer {
+  name: "BN_00000061"
+  type: "BN"
+  bottom: "inception_4e/pool"
+  top: "inception_4e/pool/bn"
+}
+layer {
   name: "inception_4e/relu_pool"
   type: "ReLU"
-  bottom: "inception_4e/pool"
-  top: "inception_4e/pool"
+  bottom: "inception_4e/pool/bn"
+  top: "inception_4e/pool/bn"
 }
 layer {
   name: "inception_4e/output"
   type: "Concat"
-  bottom: "inception_4e/3x3_s2"
-  bottom: "inception_4e/double3x3_s2"
-  bottom: "inception_4e/pool"
+  bottom: "inception_4e/3x3_s2/bn"
+  bottom: "inception_4e/double3x3_s2/bn"
+  bottom: "inception_4e/pool/bn"
   top: "inception_4e/output"
 }
 layer {
@@ -2275,12 +2641,12 @@ layer {
   bottom: "inception_4e/output"
   top: "inception_5a/1x1"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 352
@@ -2295,10 +2661,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000062"
+  type: "BN"
+  bottom: "inception_5a/1x1"
+  top: "inception_5a/1x1/bn"
+}
+layer {
   name: "inception_5a/relu_1x1"
   type: "ReLU"
-  bottom: "inception_5a/1x1"
-  top: "inception_5a/1x1"
+  bottom: "inception_5a/1x1/bn"
+  top: "inception_5a/1x1/bn"
 }
 layer {
   name: "inception_5a/3x3_reduce"
@@ -2306,12 +2678,12 @@ layer {
   bottom: "inception_4e/output"
   top: "inception_5a/3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 192
@@ -2326,23 +2698,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000063"
+  type: "BN"
+  bottom: "inception_5a/3x3_reduce"
+  top: "inception_5a/3x3_reduce/bn"
+}
+layer {
   name: "inception_5a/relu_3x3_reduce"
   type: "ReLU"
-  bottom: "inception_5a/3x3_reduce"
-  top: "inception_5a/3x3_reduce"
+  bottom: "inception_5a/3x3_reduce/bn"
+  top: "inception_5a/3x3_reduce/bn"
 }
 layer {
   name: "inception_5a/3x3"
   type: "Convolution"
-  bottom: "inception_5a/3x3_reduce"
+  bottom: "inception_5a/3x3_reduce/bn"
   top: "inception_5a/3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 320
@@ -2358,10 +2736,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000064"
+  type: "BN"
+  bottom: "inception_5a/3x3"
+  top: "inception_5a/3x3/bn"
+}
+layer {
   name: "inception_5a/relu_3x3"
   type: "ReLU"
-  bottom: "inception_5a/3x3"
-  top: "inception_5a/3x3"
+  bottom: "inception_5a/3x3/bn"
+  top: "inception_5a/3x3/bn"
 }
 layer {
   name: "inception_5a/double3x3_reduce"
@@ -2369,12 +2753,12 @@ layer {
   bottom: "inception_4e/output"
   top: "inception_5a/double3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 160
@@ -2389,23 +2773,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000065"
+  type: "BN"
+  bottom: "inception_5a/double3x3_reduce"
+  top: "inception_5a/double3x3_reduce/bn"
+}
+layer {
   name: "inception_5a/relu_double3x3_reduce"
   type: "ReLU"
-  bottom: "inception_5a/double3x3_reduce"
-  top: "inception_5a/double3x3_reduce"
+  bottom: "inception_5a/double3x3_reduce/bn"
+  top: "inception_5a/double3x3_reduce/bn"
 }
 layer {
   name: "inception_5a/double3x3_mid"
   type: "Convolution"
-  bottom: "inception_5a/double3x3_reduce"
+  bottom: "inception_5a/double3x3_reduce/bn"
   top: "inception_5a/double3x3_mid"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 224
@@ -2419,25 +2809,31 @@ layer {
       value: 0.2
     }
   }
+}
+layer {
+  name: "BN_00000066"
+  type: "BN"
+  bottom: "inception_5a/double3x3_mid"
+  top: "inception_5a/double3x3_mid/bn"
 }
 layer {
   name: "inception_5a/relu_double3x3_mid"
   type: "ReLU"
-  bottom: "inception_5a/double3x3_mid"
-  top: "inception_5a/double3x3_mid"
+  bottom: "inception_5a/double3x3_mid/bn"
+  top: "inception_5a/double3x3_mid/bn"
 }
 layer {
   name: "inception_5a/double3x3"
   type: "Convolution"
-  bottom: "inception_5a/double3x3_mid"
+  bottom: "inception_5a/double3x3_mid/bn"
   top: "inception_5a/double3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 224
@@ -2453,10 +2849,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000067"
+  type: "BN"
+  bottom: "inception_5a/double3x3"
+  top: "inception_5a/double3x3/bn"
+}
+layer {
   name: "inception_5a/relu_double3x3"
   type: "ReLU"
-  bottom: "inception_5a/double3x3"
-  top: "inception_5a/double3x3"
+  bottom: "inception_5a/double3x3/bn"
+  top: "inception_5a/double3x3/bn"
 }
 layer {
   name: "inception_5a/pool"
@@ -2476,12 +2878,12 @@ layer {
   bottom: "inception_5a/pool"
   top: "inception_5a/pool_proj"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -2496,18 +2898,24 @@ layer {
   }
 }
 layer {
+  name: "BN_00000068"
+  type: "BN"
+  bottom: "inception_5a/pool_proj"
+  top: "inception_5a/pool_proj/bn"
+}
+layer {
   name: "inception_5a/relu_pool_proj"
   type: "ReLU"
-  bottom: "inception_5a/pool_proj"
-  top: "inception_5a/pool_proj"
+  bottom: "inception_5a/pool_proj/bn"
+  top: "inception_5a/pool_proj/bn"
 }
 layer {
   name: "inception_5a/output"
   type: "Concat"
-  bottom: "inception_5a/1x1"
-  bottom: "inception_5a/3x3"
-  bottom: "inception_5a/double3x3"
-  bottom: "inception_5a/pool_proj"
+  bottom: "inception_5a/1x1/bn"
+  bottom: "inception_5a/3x3/bn"
+  bottom: "inception_5a/double3x3/bn"
+  bottom: "inception_5a/pool_proj/bn"
   top: "inception_5a/output"
 }
 layer {
@@ -2516,12 +2924,12 @@ layer {
   bottom: "inception_5a/output"
   top: "inception_5b/1x1"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 352
@@ -2536,10 +2944,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000069"
+  type: "BN"
+  bottom: "inception_5b/1x1"
+  top: "inception_5b/1x1/bn"
+}
+layer {
   name: "inception_5b/relu_1x1"
   type: "ReLU"
-  bottom: "inception_5b/1x1"
-  top: "inception_5b/1x1"
+  bottom: "inception_5b/1x1/bn"
+  top: "inception_5b/1x1/bn"
 }
 layer {
   name: "inception_5b/3x3_reduce"
@@ -2547,12 +2961,12 @@ layer {
   bottom: "inception_5a/output"
   top: "inception_5b/3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 192
@@ -2567,23 +2981,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000070"
+  type: "BN"
+  bottom: "inception_5b/3x3_reduce"
+  top: "inception_5b/3x3_reduce/bn"
+}
+layer {
   name: "inception_5b/relu_3x3_reduce"
   type: "ReLU"
-  bottom: "inception_5b/3x3_reduce"
-  top: "inception_5b/3x3_reduce"
+  bottom: "inception_5b/3x3_reduce/bn"
+  top: "inception_5b/3x3_reduce/bn"
 }
 layer {
   name: "inception_5b/3x3"
   type: "Convolution"
-  bottom: "inception_5b/3x3_reduce"
+  bottom: "inception_5b/3x3_reduce/bn"
   top: "inception_5b/3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 320
@@ -2599,10 +3019,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000071"
+  type: "BN"
+  bottom: "inception_5b/3x3"
+  top: "inception_5b/3x3/bn"
+}
+layer {
   name: "inception_5b/relu_3x3"
   type: "ReLU"
-  bottom: "inception_5b/3x3"
-  top: "inception_5b/3x3"
+  bottom: "inception_5b/3x3/bn"
+  top: "inception_5b/3x3/bn"
 }
 layer {
   name: "inception_5b/double3x3_reduce"
@@ -2610,12 +3036,12 @@ layer {
   bottom: "inception_5a/output"
   top: "inception_5b/double3x3_reduce"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 192
@@ -2630,23 +3056,29 @@ layer {
   }
 }
 layer {
+  name: "BN_00000072"
+  type: "BN"
+  bottom: "inception_5b/double3x3_reduce"
+  top: "inception_5b/double3x3_reduce/bn"
+}
+layer {
   name: "inception_5b/relu_double3x3_reduce"
   type: "ReLU"
-  bottom: "inception_5b/double3x3_reduce"
-  top: "inception_5b/double3x3_reduce"
+  bottom: "inception_5b/double3x3_reduce/bn"
+  top: "inception_5b/double3x3_reduce/bn"
 }
 layer {
   name: "inception_5b/double3x3_mid"
   type: "Convolution"
-  bottom: "inception_5b/double3x3_reduce"
+  bottom: "inception_5b/double3x3_reduce/bn"
   top: "inception_5b/double3x3_mid"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 224
@@ -2660,25 +3092,31 @@ layer {
       value: 0.2
     }
   }
+}
+layer {
+  name: "BN_00000073"
+  type: "BN"
+  bottom: "inception_5b/double3x3_mid"
+  top: "inception_5b/double3x3_mid/bn"
 }
 layer {
   name: "inception_5b/relu_double3x3_mid"
   type: "ReLU"
-  bottom: "inception_5b/double3x3_mid"
-  top: "inception_5b/double3x3_mid"
+  bottom: "inception_5b/double3x3_mid/bn"
+  top: "inception_5b/double3x3_mid/bn"
 }
 layer {
   name: "inception_5b/double3x3"
   type: "Convolution"
-  bottom: "inception_5b/double3x3_mid"
+  bottom: "inception_5b/double3x3_mid/bn"
   top: "inception_5b/double3x3"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 224
@@ -2694,10 +3132,16 @@ layer {
   }
 }
 layer {
+  name: "BN_00000074"
+  type: "BN"
+  bottom: "inception_5b/double3x3"
+  top: "inception_5b/double3x3/bn"
+}
+layer {
   name: "inception_5b/relu_double3x3"
   type: "ReLU"
-  bottom: "inception_5b/double3x3"
-  top: "inception_5b/double3x3"
+  bottom: "inception_5b/double3x3/bn"
+  top: "inception_5b/double3x3/bn"
 }
 layer {
   name: "inception_5b/pool"
@@ -2717,12 +3161,12 @@ layer {
   bottom: "inception_5b/pool"
   top: "inception_5b/pool_proj"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   convolution_param {
     num_output: 128
@@ -2737,18 +3181,24 @@ layer {
   }
 }
 layer {
+  name: "BN_00000075"
+  type: "BN"
+  bottom: "inception_5b/pool_proj"
+  top: "inception_5b/pool_proj/bn"
+}
+layer {
   name: "inception_5b/relu_pool_proj"
   type: "ReLU"
-  bottom: "inception_5b/pool_proj"
-  top: "inception_5b/pool_proj"
+  bottom: "inception_5b/pool_proj/bn"
+  top: "inception_5b/pool_proj/bn"
 }
 layer {
   name: "inception_5b/output"
   type: "Concat"
-  bottom: "inception_5b/1x1"
-  bottom: "inception_5b/3x3"
-  bottom: "inception_5b/double3x3"
-  bottom: "inception_5b/pool_proj"
+  bottom: "inception_5b/1x1/bn"
+  bottom: "inception_5b/3x3/bn"
+  bottom: "inception_5b/double3x3/bn"
+  bottom: "inception_5b/pool_proj/bn"
   top: "inception_5b/output"
 }
 layer {
@@ -2777,12 +3227,12 @@ layer {
   bottom: "pool5/7x7_s1"
   top: "loss3/classifier"
   param {
-    lr_mult: 1
-    decay_mult: 1
+    lr_mult: 1.0
+    decay_mult: 1.0
   }
   param {
-    lr_mult: 2
-    decay_mult: 0
+    lr_mult: 2.0
+    decay_mult: 0.0
   }
   inner_product_param {
     num_output: 1000
@@ -2791,7 +3241,7 @@ layer {
     }
     bias_filler {
       type: "constant"
-      value: 0
+      value: 0.0
     }
   }
 }
@@ -2801,7 +3251,7 @@ layer {
   bottom: "loss3/classifier"
   bottom: "label"
   top: "loss3/loss3"
-  loss_weight: 1
+  loss_weight: 1.0
 }
 layer {
   name: "loss3/top-1"
