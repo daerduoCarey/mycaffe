@@ -15,7 +15,7 @@ layer {
     mean_value: 123
   }
   data_param {
-    source: "examples/imagenet/ilsvrc12_train_lmdb"
+    source: "/ssd/ilsvrc2012/ilsvrc12_train_lmdb"
     batch_size: 32
     backend: LMDB
   }
@@ -36,7 +36,7 @@ layer {
     mean_value: 123
   }
   data_param {
-    source: "examples/imagenet/ilsvrc12_val_lmdb"
+    source: "/ssd/ilsvrc2012/ilsvrc12_val_lmdb"
     batch_size: 50
     backend: LMDB
   }
@@ -832,7 +832,6 @@ layer {
     pool: MAX
     kernel_size: 3
     stride: 2
-    pad: 1
   }
 }
 layer {
@@ -2254,7 +2253,6 @@ layer {
     pool: MAX
     kernel_size: 3
     stride: 2
-    pad: 1
   }
 }
 layer {
