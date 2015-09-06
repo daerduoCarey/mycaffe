@@ -10,6 +10,6 @@ gamma: 0.999993
 max_iter: 1000000
 momentum: 0.9
 weight_decay: 0.0002
-snapshot: 40000
+snapshot: 4000
 snapshot_prefix: "models/inception_6/caffemodels/inception_6"
 solver_mode: GPU
