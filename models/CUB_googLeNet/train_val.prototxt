@@ -8,8 +8,8 @@ layers {
     source: "data/CUB_200_2011/train_files.txt"
     batch_size: 32
     shuffle: true
-    new_height: 256
     new_width: 256
+    new_height: 256
   }
   transform_param {
     mirror: true
@@ -28,8 +28,8 @@ layers {
   image_data_param {
     source: "data/CUB_200_2011/val_files.txt"
     batch_size: 32
-    new_height: 256
     new_width: 256
+    new_height: 256
   }
   transform_param {
     mirror: false

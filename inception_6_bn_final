@@ -1,0 +1,3 @@
+I0907 19:36:30.160254 99249 solver.cpp:242] Iteration 0, loss = 4.9623
+I0907 19:37:42.323262 99249 solver.cpp:242] Iteration 40, loss = 5.09951
+I0907 19:38:54.889252 99249 solver.cpp:242] Iteration 80, loss = 4.95946

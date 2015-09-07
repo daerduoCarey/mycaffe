@@ -1,0 +1,38 @@
+I0907 17:36:37.321841 98526 caffe.cpp:183] Using GPUs 2
+I0907 17:36:39.319730 98526 solver.cpp:54] Initializing solver from parameters: 
+test_iter: 90
+test_interval: 1000
+base_lr: 0.001
+display: 40
+max_iter: 1000000
+lr_policy: "exp"
+gamma: 0.999993
+momentum: 0.9
+weight_decay: 0.0002
+snapshot: 2000
+snapshot_prefix: "models/CUB_googLeNet_ST/caffemodels/CUB_googLeNet_ST"
+solver_mode: GPU
+device_id: 2
+net: "models/CUB_googLeNet_ST/train_val.prototxt"
+test_initialization: false
+average_loss: 40
+iter_size: 10
+I0907 17:36:39.319818 98526 solver.cpp:96] Creating training net from net file: models/CUB_googLeNet_ST/train_val.prototxt
+[libprotobuf ERROR google/protobuf/text_format.cc:245] Error parsing text-format caffe.NetParameter: 2142:17: Message type "caffe.ParamSpec" has no field named "weight_decay".
+F0907 17:36:39.327116 98526 upgrade_proto.cpp:928] Check failed: ReadProtoFromTextFile(param_file, param) Failed to parse NetParameter file: models/CUB_googLeNet_ST/train_val.prototxt
+*** Check failure stack trace: ***
+    @     0x7f7ac3f88daa  (unknown)
+    @     0x7f7ac3f88ce4  (unknown)
+    @     0x7f7ac3f886e6  (unknown)
+    @     0x7f7ac3f8b687  (unknown)
+    @     0x7f7ac45bf4de  caffe::ReadNetParamsFromTextFileOrDie()
+    @     0x7f7ac456a11b  caffe::Solver<>::InitTrainNet()
+    @     0x7f7ac456b0e4  caffe::Solver<>::Init()
+    @     0x7f7ac456b3e9  caffe::Solver<>::Solver()
+    @           0x40fd05  caffe::GetSolver<>()
+    @           0x4089ae  train()
+    @           0x406901  main
+    @     0x7f7ac349aec5  (unknown)
+    @           0x406fed  (unknown)
+    @              (nil)  (unknown)
+Aborted (core dumped)

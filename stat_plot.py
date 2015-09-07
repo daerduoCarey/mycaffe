@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 
 pat = re.compile('(?<=Iteration )[0-9]*')
 
-USAGE = 'USAGE: stat_plot.py [keyword] file_1 file_2 ... file_k'
+USAGE = 'USAGE: stat_plot.py [keyword] [test_interval] file_1 file_2 ... file_k'
 
-if len(sys.argv) < 3:
+if len(sys.argv) < 4:
     print USAGE
     quit()
 
@@ -17,9 +17,11 @@ pat = re.compile('(?<= '+sys.argv[1]+' = ).*')
 plt.xlabel('Iteration Number')
 plt.ylabel(sys.argv[1])
 
+test_interval = int(sys.argv[2])
+
 color = ['b', 'r', 'm', 'y', 'g']
 
-for i in range(2, len(sys.argv)):
+for i in range(3, len(sys.argv)):
     
     filename = sys.argv[i]
     file = open(filename, 'r')
@@ -28,9 +30,11 @@ for i in range(2, len(sys.argv)):
     stat = []
 
     k = 0
+    if filename == 'inception_6_bn_final':
+        k = 32000
 
     for line in file:
-        k = k + 1
+        k = k + test_interval
         ite.append(k)
         l = pat.findall(line)
         value = 0
@@ -42,7 +46,7 @@ for i in range(2, len(sys.argv)):
             print 'WARNING: more than one value found in each line!'
         stat.append(value)
 
-    plt.plot(ite, stat, color[i-1], label=sys.argv[i])
+    plt.plot(ite, stat, color[i-2], label=sys.argv[i])
     file.close()
 
 plt.legend(loc=1)
