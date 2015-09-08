@@ -2139,11 +2139,11 @@ layer {
   top: "st/theta_1"
   param {
     lr_mult: 1e-4
-    weight_decay: 1e3
+    decay_mult: 1e3
   }
   param {
     lr_mult: 1e-4
-    weight_decay: 1e3
+    decay_mult: 1e3
   }
   inner_product_param {
     num_output: 6
@@ -2174,11 +2174,11 @@ layer {
   top: "st/theta_2"
   param {
     lr_mult: 1e-4
-    weight_decay: 1e3
+    decay_mult: 1e3
   }
   param {
     lr_mult: 1e-4
-    weight_decay: 1e3
+    decay_mult: 1e3
   }
   inner_product_param {
     num_output: 6

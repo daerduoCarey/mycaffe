@@ -4,8 +4,6 @@ import re
 import sys
 import matplotlib.pyplot as plt
 
-pat = re.compile('(?<=Iteration )[0-9]*')
-
 USAGE = 'USAGE: stat_plot.py [keyword] [test_interval] file_1 file_2 ... file_k'
 
 if len(sys.argv) < 4:
@@ -19,7 +17,7 @@ plt.ylabel(sys.argv[1])
 
 test_interval = int(sys.argv[2])
 
-color = ['b', 'r', 'm', 'y', 'g']
+color = ['b-', 'r-', 'm-', 'y-', 'g-']
 
 for i in range(3, len(sys.argv)):
     
@@ -49,6 +47,10 @@ for i in range(3, len(sys.argv)):
     plt.plot(ite, stat, color[i-2], label=sys.argv[i])
     file.close()
 
-plt.legend(loc=1)
+if sys.argv[1] == 'loss':
+    plt.legend(loc=1)
+else:
+    plt.legend(loc=4)
+
 plt.savefig('res.png', dpi=100)
 plt.close()

@@ -34,6 +34,10 @@ class HardSpatialTransformerLayerTest : public MultiDeviceTest<TypeParam> {
 	  filler.Fill(this->blob_U_);
 	  filler.Fill(this->blob_theta_);
 
+	  blob_loss_ = new Blob<Dtype>();
+	  vector<int> loss_shape(0);
+	  blob_loss_->Reshape(loss_shape);
+
 	  vector<int> shape_theta(2);
 	  shape_theta[0] = 2; shape_theta[1] = 6;
 	  blob_theta_->Reshape(shape_theta);
@@ -41,11 +45,13 @@ class HardSpatialTransformerLayerTest : public MultiDeviceTest<TypeParam> {
 	  blob_bottom_vec_.push_back(blob_U_);
 	  blob_bottom_vec_.push_back(blob_theta_);
 	  blob_top_vec_.push_back(blob_V_);
+	  blob_top_vec_.push_back(blob_loss_);
   }
   virtual ~HardSpatialTransformerLayerTest() { delete blob_V_; delete blob_theta_; delete blob_U_; }
   Blob<Dtype>* blob_U_;
   Blob<Dtype>* blob_theta_;
   Blob<Dtype>* blob_V_;
+  Blob<Dtype>* blob_loss_;
   vector<Blob<Dtype>*> blob_bottom_vec_;
   vector<Blob<Dtype>*> blob_top_vec_;
 };
