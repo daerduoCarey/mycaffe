@@ -38,11 +38,6 @@ class SpatialTransformerLayerTest : public MultiDeviceTest<TypeParam> {
 	  theta_shape[0] = 1; theta_shape[1] = 2; theta_shape[2] = 3;
 	  blob_theta_->Reshape(theta_shape);
 
-	  blob_loss_ = new Blob<Dtype>();
-	  vector<int> loss_shape(0);
-	  blob_loss_->Reshape(loss_shape);
-	  std::cout << "Blob_loss_count: " << blob_loss_->count() << std::endl;
-
 	  Dtype tmp;
 
 	  Dtype* U = blob_U_->mutable_cpu_data();
@@ -62,13 +57,11 @@ class SpatialTransformerLayerTest : public MultiDeviceTest<TypeParam> {
 	  blob_bottom_vec_.push_back(blob_U_);
 	  blob_bottom_vec_.push_back(blob_theta_);
 	  blob_top_vec_.push_back(blob_V_);
-	  blob_top_vec_.push_back(blob_loss_);
   }
   virtual ~SpatialTransformerLayerTest() { delete blob_V_; delete blob_theta_; delete blob_U_; }
   Blob<Dtype>* blob_U_;
   Blob<Dtype>* blob_theta_;
   Blob<Dtype>* blob_V_;
-  Blob<Dtype>* blob_loss_;
   vector<Blob<Dtype>*> blob_bottom_vec_;
   vector<Blob<Dtype>*> blob_top_vec_;
 };

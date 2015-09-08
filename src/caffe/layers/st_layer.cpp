@@ -89,10 +89,6 @@ void SpatialTransformerLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 	H = bottom[0]->shape(2);
 	W = bottom[0]->shape(3);
 
-	// reshape loss top blob
-	vector<int> loss_shape(0);
-	top[1]->Reshape(loss_shape);
-
 	// reshape V
 	vector<int> shape(4);
 
