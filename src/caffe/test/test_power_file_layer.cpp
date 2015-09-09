@@ -98,12 +98,10 @@ class PowerFileLayerTest : public MultiDeviceTest<TypeParam> {
 TYPED_TEST_CASE(PowerFileLayerTest, TestGPUAndDouble);
 
 TYPED_TEST(PowerFileLayerTest, TestForward) {
-  typedef typename TypeParam::Dtype Dtype;
   this->TestForward();
 }
 
 TYPED_TEST(PowerFileLayerTest, TestBackward) {
-  typedef typename TypeParam::Dtype Dtype;
   this->TestBackward();
 }
 

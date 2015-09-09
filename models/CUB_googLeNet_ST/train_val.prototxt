@@ -2136,15 +2136,7 @@ layer {
   name: "st/theta_1"
   type: "InnerProduct"
   bottom: "st/final_ip"
-  top: "st/theta_1"
-  param {
-    lr_mult: 1e-4
-    decay_mult: 1e3
-  }
-  param {
-    lr_mult: 1e-4
-    decay_mult: 1e3
-  }
+  top: "st/pre_theta_1"
   inner_product_param {
     num_output: 6
     weight_filler {
@@ -2152,9 +2144,28 @@ layer {
       std: 1e-4
     }
     bias_filler {
-      type: "file"
-      file: "models/CUB_googLeNet_ST/bias_init_1.txt"
+      type: "constant"
     }
+  }
+}
+layer {
+  name: "st/theta_1_final"
+  type: "PowerFile"
+  bottom: "st/pre_theta_1"
+  top: "st/theta_1"
+  power_file_param {
+    shift_file: "models/CUB_googLeNet_ST/bias_init_1.txt"
+  }
+}
+layer {
+  name: "loss/theta_1"
+  type: "STLoss"
+  bottom: "st/theta_1"
+  top: "loss/theta_1"
+  loss_weight: 10
+  st_loss_param {
+    output_H: 224
+    output_W: 224
   }
 }
 layer {
@@ -2171,15 +2182,7 @@ layer {
   name: "st/theta_2"
   type: "InnerProduct"
   bottom: "st/final_ip"
-  top: "st/theta_2"
-  param {
-    lr_mult: 1e-4
-    decay_mult: 1e3
-  }
-  param {
-    lr_mult: 1e-4
-    decay_mult: 1e3
-  }
+  top: "st/pre_theta_2"
   inner_product_param {
     num_output: 6
     weight_filler {
@@ -2187,9 +2190,28 @@ layer {
       std: 1e-4
     }
     bias_filler {
-      type: "file"
-      file: "models/CUB_googLeNet_ST/bias_init_2.txt"
+      type: "constant"
     }
+  }
+}
+layer {
+  name: "st/theta_2_final"
+  type: "PowerFile"
+  bottom: "st/pre_theta_2"
+  top: "st/theta_2"
+  power_file_param {
+    shift_file: "models/CUB_googLeNet_ST/bias_init_2.txt"
+  }
+}
+layer {
+  name: "loss/theta_2"
+  type: "STLoss"
+  bottom: "st/theta_2"
+  top: "loss/theta_2"
+  loss_weight: 10
+  st_loss_param {
+    output_H: 224
+    output_W: 224
   }
 }
 layer {

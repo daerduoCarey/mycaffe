@@ -67,7 +67,7 @@ void MaskTransformerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom
 	int row_idx, idx;
 	Dtype value;
 
-	for(int i = 0; i < N; ++i) 
+	for(int i = 0; i < N; ++i) {
 		row_idx = i * (H*W);
 		for(int j = 0; j < H*W; ++j) {
 			value = mm[row_idx + j];
@@ -82,6 +82,7 @@ void MaskTransformerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom
 				V[idx + 2 * (H*W)] = U[idx + 2 * (H*W)];
 			}
 		}
+	}
 
 	if(global_debug) std::cout<<prefix<<"Finished."<<std::endl;
 }
@@ -108,7 +109,7 @@ void MaskTransformerLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 		int row_idx, idx;
 		Dtype value;
 
-		for(int i = 0; i < N; ++i) 
+		for(int i = 0; i < N; ++i) {
 			row_idx = i * (H*W);
 			for(int j = 0; j < H*W; ++j) {
 				value = mm[row_idx + j];
@@ -119,9 +120,10 @@ void MaskTransformerLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 					dmm[row_idx + j] += U[idx + 2 * (H*W)] * dV[idx + 2 * (H*W)];
 				}
 			}
+		}
 
 		if(to_compute_dU_) {
-			for(int i = 0; i < N; ++i) 
+			for(int i = 0; i < N; ++i) {
 				row_idx = i * (H*W);
 				for(int j = 0; j < H*W; ++j) {
 					value = mm[row_idx + j];
@@ -136,6 +138,7 @@ void MaskTransformerLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 						dU[idx + 2 * (H*W)] = dV[idx + 2 * (H*W)];
 					}
 				}
+			}
 		}
 
 		if(global_debug) std::cout<<prefix<<"Finished."<<std::endl;
