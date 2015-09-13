@@ -11,5 +11,5 @@ max_iter: 1000000
 momentum: 0.9
 weight_decay: 0.0002
 snapshot: 2000
-snapshot_prefix: "models/CUB_googLeNet/caffemodels/CUB_googLeNet"
+snapshot_prefix: "models/CUB_googLeNet/caffemodels/CUB_googLeNet_large_weight_decay"
 solver_mode: GPU

@@ -1,4 +1,8 @@
 ## General
+*.png
+*.jpg
+*.log
+
 
 # Compiled Object files
 *.slo

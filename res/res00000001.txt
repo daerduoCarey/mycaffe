@@ -1,0 +1,10 @@
+Bird at (0, 0) should be 1, but is classified as 2
+Bird at (0, 1) should be 1, but is classified as 83
+Bird at (0, 2) should be 1, but is classified as 2
+Bird at (1, 1) should be 1, but is classified as 62
+Bird at (1, 3) should be 1, but is classified as 44
+Bird at (2, 0) should be 1, but is classified as 198
+Bird at (2, 1) should be 1, but is classified as 45
+Bird at (2, 3) should be 1, but is classified as 58
+Bird at (3, 1) should be 1, but is classified as 142
+Bird at (3, 3) should be 1, but is classified as 2

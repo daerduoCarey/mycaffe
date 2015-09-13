@@ -9,6 +9,24 @@
 namespace caffe {
 
 template <typename Dtype>
+__global__ void set_value_to_constant(const int nthreads, Dtype value, int size, 
+	int i, Dtype* dst) {
+
+	CUDA_KERNEL_LOOP(index, nthreads) {
+		dst[index * size + i] = value;
+	}
+}
+
+template <typename Dtype>
+__global__ void copy_values(const int nthreads, int size_src, int k, 
+	const Dtype* src, int size_dst, int i, Dtype* dst) {
+
+	CUDA_KERNEL_LOOP(index, nthreads) {
+		dst[index * size_dst + i] = src[index * size_src + k];
+	}
+}
+
+template <typename Dtype>
 __global__ void SpatialTransformerForwardGPU(const int nthreads, int N, int C,
 		int output_H_, int output_W_, int H, int W,
 		const Dtype* input_grid_data, const Dtype* U, Dtype* V) {
@@ -71,17 +89,36 @@ void SpatialTransformerLayer<Dtype>::Forward_gpu(
 	const Dtype* U = bottom[0]->gpu_data();
 	const Dtype* theta = bottom[1]->gpu_data();
 	const Dtype* output_grid_data = output_grid.gpu_data();
-
+	
+	Dtype* full_theta_data = full_theta.mutable_gpu_data();
 	Dtype* input_grid_data = input_grid.mutable_gpu_data();
 	Dtype* V = top[0]->mutable_gpu_data();
 
 	caffe_gpu_set(input_grid.count(), (Dtype)0, input_grid_data);
 	caffe_gpu_set(top[0]->count(), (Dtype)0, V);
+	
+	// compute full_theta
+	int k = 0; 
+	const int num_threads = N;
+	for(int i=0; i<6; ++i) {
+		if(is_pre_defined_theta[i]) {
+			set_value_to_constant<Dtype><<<CAFFE_GET_BLOCKS(num_threads), CAFFE_CUDA_NUM_THREADS>>>( 
+				num_threads, pre_defined_theta[i], 6, i, full_theta_data);
+			//std::cout << "Setting value " << pre_defined_theta[i] << " to "<< i << 
+			//	"/6 of full_theta_data" << std::endl;
+		} else {
+			copy_values<Dtype><<<CAFFE_GET_BLOCKS(num_threads), CAFFE_CUDA_NUM_THREADS>>>(num_threads, 
+				6 - pre_defined_count, k, theta, 6, i, full_theta_data);
+			//std::cout << "Copying " << k << "/" << 6 - pre_defined_count << " of theta to " 
+			//	<< i << "/6 of full_theta_data" << std::endl;
+			++ k;
+		}
+	}
 
 	// compute out input_grid_data
 	for(int i = 0; i < N; ++i) {
 		caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasTrans, output_H_ * output_W_, 2, 3, (Dtype)1.,
-				output_grid_data, theta + 6 * i, (Dtype)0.,
+				output_grid_data, full_theta_data + 6 * i, (Dtype)0.,
 				input_grid_data + (output_H_ * output_W_ * 2) * i);
 	}
 
@@ -223,6 +260,7 @@ void SpatialTransformerLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& to
 	const Dtype* input_grid_data = input_grid.gpu_data();
 	const Dtype* U = bottom[0]->gpu_data();
 
+	Dtype* dFull_theta = full_theta.mutable_gpu_diff();
 	Dtype* dTheta = bottom[1]->mutable_gpu_diff();
 	Dtype* dTheta_tmp_diff = dTheta_tmp.mutable_gpu_diff();
 
@@ -237,8 +275,32 @@ void SpatialTransformerLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& to
 	Dtype* all_ones_2_data = all_ones_2.mutable_gpu_data();
 	caffe_gpu_set(all_ones_2.count(), (Dtype)1., all_ones_2_data);
 	
-	caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, bottom[1]->count(), 1, output_H_ * output_W_ * C, 
-			(Dtype)1., dTheta_tmp_diff, all_ones_2_data, (Dtype)0., dTheta);
+	caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, full_theta.count(), 1, output_H_ * output_W_ * C, 
+			(Dtype)1., dTheta_tmp_diff, all_ones_2_data, (Dtype)0., dFull_theta);
+			
+	/*const Dtype* db_dFull_theta = full_theta.cpu_diff();
+	for(int i=0; i<full_theta.count(); ++i) {
+		std::cout << db_dFull_theta[i] << " ";
+	}
+	std::cout<<std::endl;*/
+			
+	int k = 0;
+	const int num_threads = N;
+	for(int i=0; i<6; ++i) {
+		if(!is_pre_defined_theta[i]) {
+			copy_values<Dtype><<<CAFFE_GET_BLOCKS(num_threads), CAFFE_CUDA_NUM_THREADS>>>(num_threads, 
+				6, i, dFull_theta, 6 - pre_defined_count, k, dTheta);
+			//std::cout << "Copying " << i << "/6 of dFull_theta to " << k << "/" << 
+			//	6 - pre_defined_count << " of dTheta" << std::endl;
+			++ k;
+		}
+	}
+	
+	/*const Dtype* db_dtheta = bottom[1]->cpu_diff();
+	for(int i=0; i<bottom[1]->count(); ++i) {
+		std::cout << db_dtheta[i] << " ";
+	}
+	std::cout<<std::endl;*/
 			
 	if(to_compute_dU_) {
 		Dtype* dU = bottom[0]->mutable_gpu_diff();

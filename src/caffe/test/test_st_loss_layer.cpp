@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
+#include <fstream>
 
 #include "gtest/gtest.h"
 
@@ -71,6 +72,51 @@ class STLossLayerTest : public MultiDeviceTest<TypeParam> {
     EXPECT_GE(fabs(loss_weight_1), kNonTrivialAbsThresh);
   }
 
+  void TestForwardWithPreDefinedTheta() {
+
+	  	std::ifstream fin("st_loss_layer.testdata");
+
+	  	int n;
+	  	fin >> n;
+
+	  	std::cout << "There are " << n << " sets of theta's to test in parallel." << std::endl;
+
+	  	// reshape theta blobs
+	  	vector<int> theta_shape(3);
+	  	theta_shape[0] = n;
+	  	theta_shape[1] = 2;
+	  	theta_shape[2] = 3;
+	  	this->blob_bottom_data_->Reshape(theta_shape);
+
+	  	Dtype* theta = this->blob_bottom_data_->mutable_cpu_data();
+
+	      // fill the values
+	  	for(int i=0; i<n; ++i) {
+	  		for(int j=0; j<6; ++j) {
+	  			fin >> theta[6 * i + j];
+	  			std::cout << theta[6 * i + j] << "\t";
+	  		}
+	  		std::cout << "\n";
+	  	}
+
+	  	LayerParameter layer_param;
+	  	STLossParameter *st_loss_param = layer_param.mutable_st_loss_param();
+	  	st_loss_param->set_output_h(4);
+	  	st_loss_param->set_output_w(4);
+
+	  	STLossLayer<Dtype> layer(layer_param);
+	  	layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
+	  	const Dtype loss = layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
+
+	  	Dtype real_loss;
+	  	fin >> real_loss;
+
+	  	std::cout << "Computed loss is " << loss << ". Real loss is " << real_loss << std::endl;
+
+	    const Dtype kErrorMargin = 1e-5;
+	    EXPECT_NEAR(loss, real_loss, kErrorMargin);
+  }
+
   Blob<Dtype>* const blob_bottom_data_;
   Blob<Dtype>* const blob_top_loss_;
   vector<Blob<Dtype>*> blob_bottom_vec_;
@@ -80,7 +126,12 @@ class STLossLayerTest : public MultiDeviceTest<TypeParam> {
 TYPED_TEST_CASE(STLossLayerTest, TestGPUAndDouble);
 
 TYPED_TEST(STLossLayerTest, TestForward) {
-  this->TestForward();
+	this->TestForward();
+}
+
+
+TYPED_TEST(STLossLayerTest, TestForwardFabricatedData) {
+	this->TestForwardWithPreDefinedTheta();
 }
 
 TYPED_TEST(STLossLayerTest, TestGradient) {

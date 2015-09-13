@@ -22,6 +22,7 @@ public:
       : Layer<Dtype>(param) {
 	      to_compute_dU_ = false; 
 	      global_debug = false; 
+	      pre_defined_count = 0;
       }
 	virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
@@ -67,6 +68,11 @@ private:
 
 	Blob<Dtype> dTheta_tmp;	// used for back propagation part in GPU implementation
 	Blob<Dtype> all_ones_2;	// used for back propagation part in GPU implementation
+
+	Blob<Dtype> full_theta;	// used for storing data and diff for full six-dim theta
+	Dtype pre_defined_theta[6];
+	bool is_pre_defined_theta[6];
+	int pre_defined_count;
 
 	Blob<Dtype> output_grid;	// standard output coordinate system, [0, 1) by [0, 1).
 	Blob<Dtype> input_grid;	// corresponding coordinate on input image after projection for each output pixel.

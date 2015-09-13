@@ -290,6 +290,14 @@ message SpatialTransformerParameter {
 	
 	// If false, only compute dTheta, DO NOT compute dU
 	optional bool to_compute_dU = 5 [default = true];
+	
+	// The default value for some parameters
+	optional double theta_1_1 = 6; 
+	optional double theta_1_2 = 7;
+	optional double theta_1_3 = 8;
+	optional double theta_2_1 = 9;
+	optional double theta_2_2 = 10;
+	optional double theta_2_3 = 11;
 }
 
 // added by Kaichun Mo
@@ -304,6 +312,12 @@ message STLossParameter {
 	// Indicate the resolution of the output images after ST transformation
 	required int32 output_H = 1;
 	required int32 output_W = 2;
+}
+
+// added by Kaichun Mo
+message LocLossParameter {
+	
+	required double threshold = 1;
 }
 
 // added by Kaichun Mo
@@ -431,6 +445,7 @@ message LayerParameter {
   optional MaskTransformerParameter mask_param = 140;
   optional STLossParameter st_loss_param = 141;
   optional PowerFileParameter power_file_param = 142;
+  optional LocLossParameter loc_loss_param = 143;
 }
 
 // Message that stores parameters used to apply transformation

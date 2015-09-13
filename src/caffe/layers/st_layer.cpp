@@ -48,9 +48,61 @@ void SpatialTransformerLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bott
 
 	std::cout<<prefix<<"output_H_ = "<<output_H_<<", output_W_ = "<<output_W_<<std::endl;
 
-	// reshape the parameter theta
-	CHECK(bottom[1]->count(1) == 6) << "The dimension of theta is not six!" << std::endl;
-	CHECK(bottom[1]->shape(0) == bottom[0]->shape(0)) << "The first dimension of theta and U should be the same" << std::endl;
+	std::cout<<prefix<<"Getting pre-defined parameters"<<std::endl;
+
+	is_pre_defined_theta[0] = false;
+	if(this->layer_param_.st_param().has_theta_1_1()) {
+		is_pre_defined_theta[0] = true;
+		++ pre_defined_count;
+		pre_defined_theta[0] = this->layer_param_.st_param().theta_1_1();
+		std::cout<<prefix<<"Getting pre-defined theta[1][1] = "<<pre_defined_theta[0]<<std::endl;
+	}
+
+	is_pre_defined_theta[1] = false;
+	if(this->layer_param_.st_param().has_theta_1_2()) {
+		is_pre_defined_theta[1] = true;
+		++ pre_defined_count;
+		pre_defined_theta[1] = this->layer_param_.st_param().theta_1_2();
+		std::cout<<prefix<<"Getting pre-defined theta[1][2] = "<<pre_defined_theta[1]<<std::endl;
+	}
+
+	is_pre_defined_theta[2] = false;
+	if(this->layer_param_.st_param().has_theta_1_3()) {
+		is_pre_defined_theta[2] = true;
+		++ pre_defined_count;
+		pre_defined_theta[2] = this->layer_param_.st_param().theta_1_3();
+		std::cout<<prefix<<"Getting pre-defined theta[1][3] = "<<pre_defined_theta[2]<<std::endl;
+	}
+
+	is_pre_defined_theta[3] = false;
+	if(this->layer_param_.st_param().has_theta_2_1()) {
+		is_pre_defined_theta[3] = true;
+		++ pre_defined_count;
+		pre_defined_theta[3] = this->layer_param_.st_param().theta_2_1();
+		std::cout<<prefix<<"Getting pre-defined theta[2][1] = "<<pre_defined_theta[3]<<std::endl;
+	}
+
+	is_pre_defined_theta[4] = false;
+	if(this->layer_param_.st_param().has_theta_2_2()) {
+		is_pre_defined_theta[4] = true;
+		++ pre_defined_count;
+		pre_defined_theta[4] = this->layer_param_.st_param().theta_2_2();
+		std::cout<<prefix<<"Getting pre-defined theta[2][2] = "<<pre_defined_theta[4]<<std::endl;
+	}
+
+	is_pre_defined_theta[5] = false;
+	if(this->layer_param_.st_param().has_theta_2_3()) {
+		is_pre_defined_theta[5] = true;
+		++ pre_defined_count;
+		pre_defined_theta[5] = this->layer_param_.st_param().theta_2_3();
+		std::cout<<prefix<<"Getting pre-defined theta[2][3] = "<<pre_defined_theta[5]<<std::endl;
+	}
+
+	// check the validation for the parameter theta
+	CHECK(bottom[1]->count(1) + pre_defined_count == 6) << "The dimension of theta is not six!"
+			<< " Only " << bottom[1]->count(1) << " + " << pre_defined_count << std::endl;
+	CHECK(bottom[1]->shape(0) == bottom[0]->shape(0)) << "The first dimension of theta and " <<
+			"U should be the same" << std::endl;
 
 	// initialize the matrix for output grid
 	std::cout<<prefix<<"Initializing the matrix for output grid"<<std::endl;
@@ -99,7 +151,7 @@ void SpatialTransformerLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 	top[0]->Reshape(shape);
 
-	//reshape dTheta_tmp
+	// reshape dTheta_tmp
 	vector<int> dTheta_tmp_shape(4);
 
 	dTheta_tmp_shape[0] = N;
@@ -113,6 +165,12 @@ void SpatialTransformerLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 	vector<int> all_ones_2_shape(1);
 	all_ones_2_shape[0] = output_H_ * output_W_ * C;
 	all_ones_2.Reshape(all_ones_2_shape);
+
+	// reshape full_theta
+	vector<int> full_theta_shape(2);
+	full_theta_shape[0] = N;
+	full_theta_shape[1] = 6;
+	full_theta.Reshape(full_theta_shape);
 
 	if(global_debug) std::cout<<prefix<<"Finished."<<std::endl;
 }
@@ -181,6 +239,9 @@ void SpatialTransformerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bot
     const vector<Blob<Dtype>*>& top) {
 
 	string prefix = "\t\tSpatial Transformer Layer:: Forward_cpu: \t";
+
+	CHECK(false) << "Don't use the CPU implementation! If you really want to, delete the" <<
+			" CHECK in st_layer.cpp file. Line number: 240-241." << std::endl;
 
 	if(global_debug) std::cout<<prefix<<"Starting!"<<std::endl;
 
@@ -361,6 +422,9 @@ void SpatialTransformerLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& to
     const vector<Blob<Dtype>*>& bottom) {
 
 		string prefix = "\t\tSpatial Transformer Layer:: Backward_cpu: \t";
+
+		CHECK(false) << "Don't use the CPU implementation! If you really want to, delete the" <<
+				" CHECK in st_layer.cpp file. Line number: 420-421." << std::endl;
 
 		if(global_debug) std::cout<<prefix<<"Starting!"<<std::endl;
 

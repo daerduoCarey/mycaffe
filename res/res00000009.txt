@@ -1,0 +1,4 @@
+Bird at (0, 2) should be 10, but is classified as 8
+Bird at (1, 1) should be 10, but is classified as 125
+Bird at (1, 2) should be 10, but is classified as 91
+Bird at (2, 1) should be 11, but is classified as 26

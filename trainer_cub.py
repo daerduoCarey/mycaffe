@@ -39,18 +39,21 @@ def data_unit(net, file_name):
 	plt.imshow(vu.vis_grid(acc))
 	plt.gca().axis('off')
 
-	plt.savefig(file_name+'.jpg', dpi)
+	plt.savefig(file_name+'.jpg')
         plt.close()
 
 
 caffe_root = './'
 
+log_file = "cub_st_xy.log"
+flog = open(log_file, 'w')
+
 niter = 1000000
-display = 40
+display = 1
 # losses will also be stored in the log
 train_loss = np.zeros(niter)
 
-caffe.set_device(2)
+caffe.set_device(0)
 caffe.set_mode_gpu()
 # We create a solver that fine-tunes from a previously trained network.
 solver = caffe.SGDSolver(caffe_root + 'models/CUB_googLeNet_ST/solver.prototxt')
@@ -62,7 +65,7 @@ for it in range(niter):
     # store the train loss
     train_loss[it] = solver.net.blobs['loss'].data
     if it % display == 0:
-        print 'iter %d, finetune_loss=%f' % (it, train_loss[it])
+        flog.write('iter %d, finetune_loss = %f\n' % (it, train_loss[it]))
         #data_unit(solver.net, 'logs/'+str(it))
         #print 'st/final_ip2'
         #print solver.net.blobs['st/final_ip2'].data[0]
@@ -71,12 +74,14 @@ for it in range(niter):
         #print 'bias'
         #print solver.net.params['st/theta_1'][1].data[0]
         #print 'theta'
-        print solver.net.blobs['st/theta_1'].data[:2]
-        print solver.net.blobs['st/theta_2'].data[:2]
+        flog.write(str(solver.net.blobs['st/theta_1'].data[:2]) + '\n')
+        flog.write(str(solver.net.blobs['st/theta_2'].data[:2]) + '\n')
         #print 'dtheta'
         #print solver.net.blobs['st/theta_1'].diff[0]
         #print 'dweight'
         #print solver.net.params['st/theta_1'][0].diff[0]
-    if it % 1000 == 0:
-        data_unit(solver.net, 'logs/'+str(it))
-print 'done'
+    if it % 10 == 0:
+        data_unit(solver.net, 'logs_cub_st_xy/'+str(it))
+flog.write('done')
+flog.close()
+

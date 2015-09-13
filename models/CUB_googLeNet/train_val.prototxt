@@ -2221,9 +2221,6 @@ layers {
   top: "loss3/top-1"
   name: "loss3/top-1"
   type: ACCURACY
-  include {
-    phase: TEST
-  }
 }
 layers {
   bottom: "loss3/classifier"
@@ -2233,8 +2230,5 @@ layers {
   type: ACCURACY
   accuracy_param {
     top_k: 5
-  }
-  include {
-    phase: TEST
   }
 }
