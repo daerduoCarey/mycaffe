@@ -10,7 +10,7 @@ layers {
     source: "/ssd/ilsvrc2012/ilsvrc12_train_lmdb"
     batch_size: 32
     backend: LMDB
-    shuffle: true
+#    shuffle: true
   }
   include {
     phase: TRAIN

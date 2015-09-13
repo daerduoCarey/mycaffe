@@ -1,306 +1,193 @@
 #include <algorithm>
-#include <cfloat>
 #include <vector>
 
+#include "caffe/common_layers.hpp"
+#include "caffe/filler.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/util/benchmark.hpp"
 #include "caffe/util/math_functions.hpp"
-#include "caffe/util/gpu_util.cuh"
-#include "caffe/vision_layers.hpp"
-#include "caffe/bn_layer.hpp"
 
 namespace caffe {
 
 template <typename Dtype>
-__global__ void MeanForward(const int nthreads, const Dtype* bottom_data,
-    const int num, const int channels, const int height,
-    const int width, Dtype* mean) {
-  CUDA_KERNEL_LOOP(index, nthreads) {
-    int c = (index / width / height) % channels;
-    caffe_gpu_atomic_add(bottom_data[index], mean + c);
+void BNLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
+  const Dtype* const_bottom_data = bottom[0]->gpu_data();
+  const Dtype* const_top_data = top[0]->gpu_data();
+  Dtype* top_data = top[0]->mutable_gpu_data();		
+
+  const Dtype* scale_data = this->blobs_[0]->gpu_data();
+  const Dtype* shift_data = this->blobs_[1]->gpu_data();
+
+  // put the squares of bottom into buffer_blob_
+  caffe_gpu_powx(bottom[0]->count(), const_bottom_data, Dtype(2),
+      buffer_blob_.mutable_gpu_data());
+
+  if (this->phase_ == TEST && test_initialized_ == true) {
+    // do nothing; 
+  } else {
+  // computes variance using var(X) = E(X^2) - (EX)^2
+  // EX across spatial
+  caffe_gpu_gemv<Dtype>(CblasNoTrans, N_ * C_, H_ * W_, Dtype(1. / (H_ * W_)), const_bottom_data,
+      spatial_sum_multiplier_.gpu_data(), Dtype(0), spatial_mean_.mutable_gpu_data());
+  // EX across batch
+  caffe_gpu_gemv<Dtype>(CblasTrans, N_, C_, Dtype(1. / N_), spatial_mean_.gpu_data(),
+      batch_sum_multiplier_.gpu_data(), Dtype(0), batch_mean_.mutable_gpu_data());
+
+  // E(X^2) across spatial
+  caffe_gpu_gemv<Dtype>(CblasNoTrans, N_ * C_, H_ * W_, Dtype(1. / (H_ * W_)), buffer_blob_.gpu_data(),
+      spatial_sum_multiplier_.gpu_data(), Dtype(0), spatial_variance_.mutable_gpu_data());
+  // E(X^2) across batch
+  caffe_gpu_gemv<Dtype>(CblasTrans, N_, C_, Dtype(1. / N_), spatial_variance_.gpu_data(),
+      batch_sum_multiplier_.gpu_data(), Dtype(0), batch_variance_.mutable_gpu_data());
+
+  caffe_gpu_powx(batch_mean_.count(), batch_mean_.gpu_data(), Dtype(2),
+      buffer_blob_.mutable_gpu_data());  // (EX)^2
+  caffe_gpu_sub(batch_mean_.count(), batch_variance_.gpu_data(), buffer_blob_.gpu_data(),
+      batch_variance_.mutable_gpu_data());  // variance
   }
-}
 
-template <typename Dtype>
-__global__ void DiffForward(const int nthreads, const Dtype* bottom_data,
-    const int num, const int channels, const int height,
-    const int width, const Dtype* mean, Dtype* diff) {
-  CUDA_KERNEL_LOOP(index, nthreads) {
-    int c = (index / width / height) % channels;
-    diff[index] = bottom_data[index] - mean[c];
-  }
-}
+  // do mean and variance normalization
+  // subtract mean
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_, C_, 1, Dtype(1),
+      batch_sum_multiplier_.gpu_data(), batch_mean_.gpu_data(), Dtype(0),
+      spatial_mean_.mutable_gpu_data());
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_ * C_, H_ * W_, 1, Dtype(-1),
+      spatial_mean_.gpu_data(), spatial_sum_multiplier_.gpu_data(), Dtype(0),
+      buffer_blob_.mutable_gpu_data());
 
-template <typename Dtype>
-__global__ void VarForward(const int nthreads,
-    const int num, const int channels, const int height,
-    const int width, const Dtype* diff, Dtype* var) {
-  CUDA_KERNEL_LOOP(index, nthreads) {
-    int c = (index / width / height) % channels;
-    caffe_gpu_atomic_add(diff[index] * diff[index], var + c);
-  }
-}
+  caffe_gpu_add(buffer_blob_.count(), const_bottom_data, buffer_blob_.gpu_data(), top_data);
 
-template <typename Dtype>
-__global__ void NormalizeForward(const int nthreads, const Dtype* bottom_data,
-    const int num, const int channels, const int height,
-    const int width, const Dtype* means, const Dtype* vars,
-    const Dtype* gammas, const Dtype* betas, Dtype* top_data) {
-  CUDA_KERNEL_LOOP(index, nthreads) {
-    int c = (index / width / height) % channels;
+  // normalize variance
+  //caffe_gpu_add_scalar(batch_variance_.count(), var_eps_, batch_variance_.mutable_gpu_data());
+  //caffe_gpu_powx(batch_variance_.count(), batch_variance_.gpu_data(), Dtype(0.5),
+  //    batch_variance_.mutable_gpu_data());
+  caffe_copy(batch_variance_.count(), batch_variance_.gpu_data(), batch_variance_sqrt_.mutable_gpu_data()); 
+  caffe_gpu_add_scalar(batch_variance_sqrt_.count(), var_eps_, batch_variance_sqrt_.mutable_gpu_data());
+  caffe_gpu_powx(batch_variance_sqrt_.count(), batch_variance_sqrt_.gpu_data(), Dtype(0.5),
+      batch_variance_sqrt_.mutable_gpu_data());
 
-    Dtype mean = means[c];
-    Dtype gamma = gammas[c];
-    Dtype beta = betas[c];
-    Dtype stdev = sqrt(vars[c]);
+  //caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_, C_, 1, Dtype(1),
+  //    batch_sum_multiplier_.gpu_data(), batch_variance_.gpu_data(), Dtype(0),
+  //    spatial_variance_.mutable_gpu_data());
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_, C_, 1, Dtype(1),
+      batch_sum_multiplier_.gpu_data(), batch_variance_sqrt_.gpu_data(), Dtype(0),
+      spatial_variance_.mutable_gpu_data());
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_ * C_, H_ * W_, 1, Dtype(1),
+      spatial_variance_.gpu_data(), spatial_sum_multiplier_.gpu_data(), Dtype(0),
+      buffer_blob_.mutable_gpu_data());
 
-    Dtype input = bottom_data[index];
+  caffe_gpu_div(buffer_blob_.count(), const_top_data, buffer_blob_.gpu_data(), top_data);
 
-    Dtype normed = (input - mean) / stdev;
-    top_data[index] = gamma * normed + beta;
-  }
-}
+  // save x_norm
+  caffe_copy(buffer_blob_.count(), const_top_data, x_norm_.mutable_gpu_data());
 
-template <typename Dtype>
-__global__ void DlDsigmasqBackward(const int nthreads, const Dtype* top_diff,
-    const int num, const int channels, const int height,
-    const int width, const Dtype* diffs, const Dtype* vars,
-    const Dtype* gammas, Dtype* dl_dsigmasq) {
-  CUDA_KERNEL_LOOP(index, nthreads) {
-    int c = (index / width / height) % channels;
+  // scale
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_, C_, 1, Dtype(1),
+      batch_sum_multiplier_.gpu_data(), scale_data, Dtype(0),
+      spatial_variance_.mutable_gpu_data());
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_ * C_, H_ * W_, 1, Dtype(1),
+      spatial_variance_.gpu_data(), spatial_sum_multiplier_.gpu_data(), Dtype(0),
+      buffer_blob_.mutable_gpu_data());
+  caffe_gpu_mul(buffer_blob_.count(), const_top_data, buffer_blob_.gpu_data(), top_data);
 
-    Dtype var = vars[c];
-    Dtype gamma = gammas[c];
-    Dtype var_sqrt = sqrtf(var);
-    Dtype var_3_2 = var_sqrt * var_sqrt * var_sqrt;
-    Dtype var_pow = 1.0 / var_3_2;
+  // shift
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_, C_, 1, Dtype(1),
+      batch_sum_multiplier_.gpu_data(), shift_data, Dtype(0),
+      spatial_mean_.mutable_gpu_data());
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_ * C_, H_ * W_, 1, Dtype(1),
+      spatial_mean_.gpu_data(), spatial_sum_multiplier_.gpu_data(), Dtype(0),
+      buffer_blob_.mutable_gpu_data());
+  caffe_gpu_add(buffer_blob_.count(), const_top_data, buffer_blob_.gpu_data(), top_data);
 
-    caffe_gpu_atomic_add((Dtype) (gamma * top_diff[index] * diffs[index] * -0.5 * var_pow), dl_dsigmasq + c);
-  }
-}
-
-template <typename Dtype>
-__global__ void DlDmuBackward(const int nthreads, const Dtype* top_diff,
-    const int num, const int channels, const int height,
-    const int width, const Dtype* diffs, const Dtype* vars,
-    const Dtype* gammas, const Dtype* dl_dsigmasq, Dtype* dl_dmu) {
-  int count = num * height * width;
-  CUDA_KERNEL_LOOP(index, nthreads) {
-    int c = (index / width / height) % channels;
-
-    Dtype var = vars[c];
-    Dtype gamma = gammas[c];
-    Dtype var_sqrt = sqrtf(var);
-    Dtype inv_sqr_var = 1.0 / var_sqrt;
-    Dtype dl_dsigmasq_val = dl_dsigmasq[c];
-
-    caffe_gpu_atomic_add((Dtype) (gamma * top_diff[index] * -inv_sqr_var +
-        dl_dsigmasq_val * -2.0 * diffs[index] / count), dl_dmu + c);
-  }
-}
-
-template <typename Dtype>
-__global__ void DlDxBackward(const int nthreads, const Dtype* top_diff,
-    const int num, const int channels, const int height,
-    const int width, const Dtype* diffs, const Dtype* vars,
-    const Dtype* gammas, const Dtype* dl_dsigmasq, const Dtype* dl_dmu,
-    Dtype* bottom_diff) {
-  int count = num * height * width;
-  CUDA_KERNEL_LOOP(index, nthreads) {
-    int c = (index / width / height) % channels;
-
-    Dtype var = vars[c];
-    Dtype gamma = gammas[c];
-    Dtype var_sqrt = sqrtf(var);
-    Dtype inv_sqr_var = 1.0 / var_sqrt;
-    Dtype dl_dsigmasq_val = dl_dsigmasq[c];
-    Dtype dl_dmu_val = dl_dmu[c];
-
-    bottom_diff[index] = gamma * top_diff[index] * inv_sqr_var +
-        dl_dsigmasq_val * 2.0 * diffs[index] / count + dl_dmu_val / count;
-  }
-}
-
-template <typename Dtype>
-__global__ void ParamsBackward(const int nthreads, const Dtype* top_diff,
-    const Dtype* top_data,
-    const int num, const int channels, const int height,
-    const int width, const Dtype* gammas, const Dtype* betas,
-    Dtype* gamma_diff, Dtype* beta_diff) {
-  CUDA_KERNEL_LOOP(index, nthreads) {
-    int c = (index / width / height) % channels;
-
-    Dtype gamma = gammas[c];
-    Dtype beta = betas[c];
-
-    caffe_gpu_atomic_add(top_diff[index] * (top_data[index] - beta) / gamma, gamma_diff + c);
-    caffe_gpu_atomic_add(top_diff[index], beta_diff + c);
-  }
-}
-
-template <typename Dtype>
-void BNLayer<Dtype>::Forward_gpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  CHECK_EQ(1, bottom.size());
-  CHECK_EQ(1, top.size());
-
-  Blob<Dtype>* input = bottom.at(0);
-  Blob<Dtype>* output = top.at(0);
-
-  shared_ptr<Blob<Dtype> > gammas = this->blobs_.at(0);
-  shared_ptr<Blob<Dtype> > betas = this->blobs_.at(1);
-
-  Blob<Dtype> means;
-  means.Reshape(1, input->channels(), 1, 1);
-  caffe_gpu_set(means.count(), Dtype(0), means.mutable_gpu_data());
-
-  vars_.Reshape(1, input->channels(), 1, 1);
-  caffe_gpu_set(vars_.count(), Dtype(0), vars_.mutable_gpu_data());
-
-  diffs_.ReshapeLike(*input);
-
-  int num = input->num();
-  int channels = input->channels();
-  int height = input->height();
-  int width = input->width();
-  int nthreads = input->count();
-
-  CHECK_EQ(num, output->num());
-  CHECK_EQ(channels, output->channels());
-  CHECK_EQ(height, output->height());
-  CHECK_EQ(width, output->width());
-
-  Timer timer;
-
-  timer.Start();
-  // NOLINT_NEXT_LINE(whitespace/operators)
-  MeanForward<Dtype><<<CAFFE_GET_BLOCKS(nthreads), CAFFE_CUDA_NUM_THREADS>>> (
-      nthreads, input->gpu_data(), num, channels, height, width,
-      means.mutable_gpu_data());
-  CUDA_POST_KERNEL_CHECK;
-  timer.Stop();
-  // DLOG(INFO) << "MeanForward: " << timer.MilliSeconds();
-
-  Dtype count = num * height * width;
-
-  caffe_gpu_scal(means.count(), Dtype(1.0 / count), means.mutable_gpu_data());
-
-  timer.Start();
-  // NOLINT_NEXT_LINE(whitespace/operators)
-  DiffForward<Dtype><<<CAFFE_GET_BLOCKS(nthreads), CAFFE_CUDA_NUM_THREADS>>> (
-      nthreads, input->gpu_data(), num, channels, height, width,
-      means.gpu_data(), diffs_.mutable_gpu_data());
-  CUDA_POST_KERNEL_CHECK;
-  timer.Stop();
-  // DLOG(INFO) << "DiffForward: " << timer.MilliSeconds();
-
-  timer.Start();
-  // NOLINT_NEXT_LINE(whitespace/operators)
-  VarForward<Dtype><<<CAFFE_GET_BLOCKS(nthreads), CAFFE_CUDA_NUM_THREADS>>> (
-      nthreads, num, channels, height, width, diffs_.gpu_data(),
-      vars_.mutable_gpu_data());
-  CUDA_POST_KERNEL_CHECK;
-  timer.Stop();
-  // DLOG(INFO) << "VarForward: " << timer.MilliSeconds();
-
-  caffe_gpu_scal(vars_.count(), Dtype(1.0 / count),
-      vars_.mutable_gpu_data());
-
-  caffe_gpu_add_scalar(vars_.count(), Dtype(1e-6), vars_.mutable_gpu_data());
-
-  timer.Start();
-  // NOLINT_NEXT_LINE(whitespace/operators)
-  NormalizeForward<Dtype><<<CAFFE_GET_BLOCKS(nthreads),
-      CAFFE_CUDA_NUM_THREADS>>> (
-      nthreads, input->gpu_data(), num, channels, height, width,
-      means.gpu_data(), vars_.gpu_data(), gammas->gpu_data(), betas->gpu_data(),
-      output->mutable_gpu_data());
-  CUDA_POST_KERNEL_CHECK;
-  timer.Stop();
-  // DLOG(INFO) << "NormalizeForward: " << timer.MilliSeconds();
 }
 
 template <typename Dtype>
 void BNLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down,
     const vector<Blob<Dtype>*>& bottom) {
-  Blob<Dtype>* input = bottom.at(0);
-  Blob<Dtype>* output = top.at(0);
+  const Dtype* const_bottom_diff = bottom[0]->gpu_diff();
+  Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
+  const Dtype* const_top_diff = top[0]->gpu_diff();	
 
-  int num = input->num();
-  int channels = input->channels();
-  int height = input->height();
-  int width = input->width();
-  int count = input->count();
+  Dtype* scale_diff = this->blobs_[0]->mutable_gpu_diff();
+  Dtype* shift_diff = this->blobs_[1]->mutable_gpu_diff();
+  const Dtype* scale_data = this->blobs_[0]->gpu_data();
 
-  shared_ptr<Blob<Dtype> > gammas = this->blobs_.at(0);
-  shared_ptr<Blob<Dtype> > betas = this->blobs_.at(1);
+  // gradient w.r.t. scale
+  caffe_gpu_mul(buffer_blob_.count(), x_norm_.gpu_data(), const_top_diff, buffer_blob_.mutable_gpu_data());
+  // EX across spatial
+  caffe_gpu_gemv<Dtype>(CblasNoTrans, N_ * C_, H_ * W_, Dtype(1), buffer_blob_.gpu_data(),
+      spatial_sum_multiplier_.gpu_data(), Dtype(0), spatial_variance_.mutable_gpu_data());
+  // EX across batch
+  caffe_gpu_gemv<Dtype>(CblasTrans, N_, C_, Dtype(1), spatial_variance_.gpu_data(),
+      batch_sum_multiplier_.gpu_data(), Dtype(0), scale_diff);
 
-  caffe_gpu_set(gammas->count(), Dtype(0), gammas->mutable_gpu_diff());
-  caffe_gpu_set(betas->count(), Dtype(0), betas->mutable_gpu_diff());
+  // gradient w.r.t. shift
+  // EX across spatial
+  caffe_gpu_gemv<Dtype>(CblasNoTrans, N_ * C_, H_ * W_, Dtype(1), const_top_diff,
+      spatial_sum_multiplier_.gpu_data(), Dtype(0), spatial_mean_.mutable_gpu_data());
+  // EX across batch
+  caffe_gpu_gemv<Dtype>(CblasTrans, N_, C_, Dtype(1), spatial_mean_.gpu_data(),
+      batch_sum_multiplier_.gpu_data(), Dtype(0), shift_diff);
 
-  Timer timer;
+  // put scale * top_diff to buffer_blob_
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_, C_, 1, Dtype(1),
+      batch_sum_multiplier_.gpu_data(), scale_data, Dtype(0),
+      spatial_variance_.mutable_gpu_data());
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_ * C_, H_ * W_, 1, Dtype(1),
+      spatial_variance_.gpu_data(), spatial_sum_multiplier_.gpu_data(), Dtype(0),
+      buffer_blob_.mutable_gpu_data());
+  caffe_gpu_mul(buffer_blob_.count(), const_top_diff, buffer_blob_.gpu_data(), buffer_blob_.mutable_gpu_data());
+		
+  // use new top diff for computation
+  caffe_gpu_mul(buffer_blob_.count(), x_norm_.gpu_data(), buffer_blob_.gpu_data(), bottom_diff);
+  // EX across spatial
+  caffe_gpu_gemv<Dtype>(CblasNoTrans, N_ * C_, H_ * W_, Dtype(1), const_bottom_diff,
+      spatial_sum_multiplier_.gpu_data(), Dtype(0), spatial_mean_.mutable_gpu_data());
+  // EX across batch
+  caffe_gpu_gemv<Dtype>(CblasTrans, N_, C_, Dtype(1), spatial_mean_.gpu_data(),
+      batch_sum_multiplier_.gpu_data(), Dtype(0), batch_mean_.mutable_gpu_data());
 
-  if (propagate_down.at(0)) {
-    CHECK_EQ(num, output->num());
-    CHECK_EQ(channels, output->channels());
-    CHECK_EQ(height, output->height());
-    CHECK_EQ(width, output->width());
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_, C_, 1, Dtype(1),
+      batch_sum_multiplier_.gpu_data(), batch_mean_.gpu_data(), Dtype(0),
+      spatial_mean_.mutable_gpu_data());
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_ * C_, H_ * W_, 1, Dtype(1),
+      spatial_mean_.gpu_data(), spatial_sum_multiplier_.gpu_data(), Dtype(0),
+      bottom_diff);
 
-    Blob<Dtype> dl_dsigmasq;
-    dl_dsigmasq.Reshape(1, channels, 1, 1);
-    caffe_gpu_set(dl_dsigmasq.count(), Dtype(0),
-        dl_dsigmasq.mutable_gpu_data());
+  caffe_gpu_mul(buffer_blob_.count(), x_norm_.gpu_data(), const_bottom_diff, bottom_diff);
 
-    timer.Start();
-    // NOLINT_NEXT_LINE(whitespace/operators)
-    DlDsigmasqBackward<Dtype><<<CAFFE_GET_BLOCKS(count),
-        CAFFE_CUDA_NUM_THREADS>>> (
-        count, output->gpu_diff(), num, channels, height, width,
-        diffs_.gpu_data(), vars_.gpu_data(), gammas->gpu_data(),
-        dl_dsigmasq.mutable_gpu_data());
-    CUDA_POST_KERNEL_CHECK;
-    timer.Stop();
-    // DLOG(INFO) << "DlDsigmasqBackward: " << timer.MilliSeconds();
+  // EX across spatial
+  caffe_gpu_gemv<Dtype>(CblasNoTrans, N_ * C_, H_ * W_, Dtype(1), buffer_blob_.gpu_data(),
+			spatial_sum_multiplier_.gpu_data(), Dtype(0), spatial_mean_.mutable_gpu_data());
+  // EX across batch
+  caffe_gpu_gemv<Dtype>(CblasTrans, N_, C_, Dtype(1), spatial_mean_.gpu_data(),
+      batch_sum_multiplier_.gpu_data(), Dtype(0), batch_mean_.mutable_gpu_data());
 
-    Blob<Dtype> dl_dmu;
-    dl_dmu.Reshape(1, channels, 1, 1);
-    caffe_gpu_set(dl_dmu.count(), Dtype(0), dl_dmu.mutable_gpu_data());
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_, C_, 1, Dtype(1),
+      batch_sum_multiplier_.gpu_data(), batch_mean_.gpu_data(), Dtype(0),
+      spatial_mean_.mutable_gpu_data());
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_ * C_, H_ * W_, 1, Dtype(1),
+      spatial_mean_.gpu_data(), spatial_sum_multiplier_.gpu_data(), Dtype(1),
+      bottom_diff);
 
-    timer.Start();
-    // NOLINT_NEXT_LINE(whitespace/operators)
-    DlDmuBackward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>> (
-        count, output->gpu_diff(), num, channels, height, width,
-        diffs_.gpu_data(), vars_.gpu_data(), gammas->gpu_data(),
-        dl_dsigmasq.gpu_data(), dl_dmu.mutable_gpu_data());
-    CUDA_POST_KERNEL_CHECK;
-    timer.Stop();
-    // DLOG(INFO) << "DlDmuBackward: " << timer.MilliSeconds();
+  caffe_gpu_axpby(buffer_blob_.count(), Dtype(1), buffer_blob_.gpu_data(), Dtype(-1. / (N_ * H_ * W_)),
+      bottom_diff);
+        
+  // variance normalization
+  //caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_, C_, 1, Dtype(1),
+  //    batch_sum_multiplier_.gpu_data(), batch_variance_.gpu_data(), Dtype(0),
+  //    spatial_variance_.mutable_gpu_data());
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_, C_, 1, Dtype(1),
+      batch_sum_multiplier_.gpu_data(), batch_variance_sqrt_.gpu_data(), Dtype(0),
+      spatial_variance_.mutable_gpu_data());
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, N_ * C_, H_ * W_, 1, Dtype(1),
+      spatial_variance_.gpu_data(), spatial_sum_multiplier_.gpu_data(), Dtype(0),
+      buffer_blob_.mutable_gpu_data());
 
-    caffe_gpu_set(count, Dtype(0), input->mutable_gpu_diff());
-
-    timer.Start();
-    // NOLINT_NEXT_LINE(whitespace/operators)
-    DlDxBackward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>> (
-        count, output->gpu_diff(), num, channels, height, width,
-        diffs_.gpu_data(), vars_.gpu_data(), gammas->gpu_data(),
-        dl_dsigmasq.gpu_data(), dl_dmu.gpu_data(), input->mutable_gpu_diff());
-    CUDA_POST_KERNEL_CHECK;
-    timer.Stop();
-    // DLOG(INFO) << "DlDxBackward: " << timer.MilliSeconds();
-  }
-
-  timer.Start();
-  // NOLINT_NEXT_LINE(whitespace/operators)
-  ParamsBackward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>> (
-      count, output->gpu_diff(), output->gpu_data(), num, channels, height,
-      width, gammas->gpu_data(), betas->gpu_data(), gammas->mutable_gpu_diff(),
-      betas->mutable_gpu_diff());
-  CUDA_POST_KERNEL_CHECK;
-  timer.Stop();
-  // DLOG(INFO) << "ParamsBackward: " << timer.MilliSeconds();
+  caffe_gpu_div(buffer_blob_.count(), const_bottom_diff, buffer_blob_.gpu_data(), bottom_diff);
 }
 
+//INSTANTIATE_CLASS(BNLayer);
 INSTANTIATE_LAYER_GPU_FUNCS(BNLayer);
-
 }  // namespace caffe

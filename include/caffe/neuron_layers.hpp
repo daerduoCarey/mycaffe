@@ -804,6 +804,78 @@ class PReLULayer : public NeuronLayer<Dtype> {
   Blob<Dtype> bottom_memory_;  // memory for in-place computation
 };
 
+
+template <typename Dtype>
+class BNLayer : public NeuronLayer<Dtype> {
+ public:
+  explicit BNLayer(const LayerParameter& param)
+      : NeuronLayer<Dtype>(param) {}
+  //virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+  //    vector<Blob<Dtype>*>* top);
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline int ExactNumBottomBlobs() const { return 1; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
+
+  void set_batch_mean_and_batch_variance(const Blob<Dtype>& source_batch_mean, 
+                                         const Blob<Dtype>& source_batch_variance) {
+    set_batch_mean(source_batch_mean); 
+    set_batch_variance(source_batch_variance); 
+    test_initialized_ = true; 
+  }; 
+  bool test_initialized() { return test_initialized_; }; 
+  Blob<Dtype>& batch_mean() { return batch_mean_; };
+
+ protected:
+  void set_batch_mean(const Blob<Dtype>& source) { 
+    batch_mean_.CopyFrom(source); 
+  }; 
+  void set_batch_variance(const Blob<Dtype>& source) {
+    batch_variance_.CopyFrom(source);   
+  }; 
+
+/*  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      vector<Blob<Dtype>*>* top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      vector<Blob<Dtype>*>* top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom);
+*/
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+
+  // spatial mean & variance
+  Blob<Dtype> spatial_mean_, spatial_variance_;
+  // batch mean & variance
+  Blob<Dtype> batch_mean_, batch_variance_, batch_variance_sqrt_;
+  // buffer blob
+  Blob<Dtype> buffer_blob_;
+  // x_norm
+  Blob<Dtype> x_norm_;
+
+  // x_sum_multiplier is used to carry out sum using BLAS
+  Blob<Dtype> spatial_sum_multiplier_, batch_sum_multiplier_;
+
+  // dimension
+  int N_;
+  int C_;
+  int H_;
+  int W_;
+  // eps
+  Dtype var_eps_;
+  
+  bool test_initialized_; 
+};
+
 }  // namespace caffe
 
 #endif  // CAFFE_NEURON_LAYERS_HPP_

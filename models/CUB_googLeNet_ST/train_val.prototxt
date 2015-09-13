@@ -2108,11 +2108,11 @@ layer {
     kernel_size: 1
     weight_filler {
       type: "gaussian"
-      std: 0.01
+      std: 0.001
     }
     bias_filler {
       type: "constant"
-      value: 0.02
+      value: 0.001
     }
   }
 }
@@ -2131,11 +2131,11 @@ layer {
     num_output: 128
     weight_filler {
       type: "gaussian"
-      std: 0.01
+      std: 0.001
     }
     bias_filler {
       type: "constant"
-      value: 0.02
+      value: 0.0001
     }
   }
 }
@@ -2151,7 +2151,6 @@ layer {
   bottom: "st/final_ip"
   top: "st/pre_theta_1"
   param {
-    lr_mult: 0.01
     decay_mult: 10
   }
   param {
@@ -2210,7 +2209,6 @@ layer {
   bottom: "st/final_ip"
   top: "st/pre_theta_2"
   param {
-    lr_mult: 0.01
     decay_mult: 10
   }
   param {
