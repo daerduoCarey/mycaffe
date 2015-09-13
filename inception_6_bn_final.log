@@ -37979,3 +37979,18 @@ I0913 13:57:07.570838 99249 solver.cpp:258]     Train net output #0: loss1/loss1
 I0913 13:57:07.570850 99249 solver.cpp:258]     Train net output #1: loss2/loss1 = 2.11328 (* 0.3 = 0.633984 loss)
 I0913 13:57:07.570858 99249 solver.cpp:258]     Train net output #2: loss3/loss3 = 1.70128 (* 1 = 1.70128 loss)
 I0913 13:57:07.570868 99249 solver.cpp:571] Iteration 237880, lr = 0.012182
+I0913 13:58:20.806334 99249 solver.cpp:242] Iteration 237920, loss = 2.03495
+I0913 13:58:20.806583 99249 solver.cpp:258]     Train net output #0: loss1/loss1 = 1.89697 (* 0.3 = 0.56909 loss)
+I0913 13:58:20.806596 99249 solver.cpp:258]     Train net output #1: loss2/loss1 = 1.56462 (* 0.3 = 0.469385 loss)
+I0913 13:58:20.806602 99249 solver.cpp:258]     Train net output #2: loss3/loss3 = 0.870839 (* 1 = 0.870839 loss)
+I0913 13:58:20.806613 99249 solver.cpp:571] Iteration 237920, lr = 0.0121786
+I0913 13:59:34.002478 99249 solver.cpp:242] Iteration 237960, loss = 1.90268
+I0913 13:59:34.002707 99249 solver.cpp:258]     Train net output #0: loss1/loss1 = 0.977358 (* 0.3 = 0.293207 loss)
+I0913 13:59:34.002720 99249 solver.cpp:258]     Train net output #1: loss2/loss1 = 0.722576 (* 0.3 = 0.216773 loss)
+I0913 13:59:34.002727 99249 solver.cpp:258]     Train net output #2: loss3/loss3 = 0.503225 (* 1 = 0.503225 loss)
+I0913 13:59:34.002738 99249 solver.cpp:571] Iteration 237960, lr = 0.0121753
+I0913 14:00:47.208852 99249 solver.cpp:242] Iteration 238000, loss = 2.22336
+I0913 14:00:47.209095 99249 solver.cpp:258]     Train net output #0: loss1/loss1 = 2.70548 (* 0.3 = 0.811643 loss)
+I0913 14:00:47.209105 99249 solver.cpp:258]     Train net output #1: loss2/loss1 = 1.89435 (* 0.3 = 0.568305 loss)
+I0913 14:00:47.209112 99249 solver.cpp:258]     Train net output #2: loss3/loss3 = 1.92603 (* 1 = 1.92603 loss)
+I0913 14:00:47.209123 99249 solver.cpp:571] Iteration 238000, lr = 0.0121719
